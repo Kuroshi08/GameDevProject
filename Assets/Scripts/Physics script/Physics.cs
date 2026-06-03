@@ -3,7 +3,9 @@ using Unity.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-
+/// <summary>
+/// make into monobehavior
+/// </summary>
 public class MyPhysics
 {
     float mass;
@@ -15,6 +17,9 @@ public class MyPhysics
     BoxCollider2D colliderx;
     BoxCollider2D collidery;
     GameObject o;
+
+
+    //make this also a comp, use My colliderdirectly
     public MyPhysics(GameObject o)
     {
         this.o = o;
@@ -54,7 +59,6 @@ public class MyPhysics
             }
             vel.x = minDistanceX;
         }
-        Debug.Log(colliderxR.Count);
         o.transform.Translate(vel);
     }
     bool IsGround(GameObject o)

@@ -3,27 +3,22 @@ using Unity.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
-using Unity.VisualScripting;
-
 public class MyCollider
 {
     public GameObject o;
     Vector2 Pos;
-    Vector2 Size;
+    public Vector2 Size;
     Vector2 offset;
-    Vector2[] points = new Vector2[4];
+    public Vector2[] points = new Vector2[4];
     float rotation;
-    List<string> layers;
     bool active;
-    public MyCollider(GameObject o, Vector2 Size, Vector2 offset, List<string> layers,float rotation = 0, bool active = true)
+    public MyCollider(GameObject o, Vector2 Size, Vector2 offset,float rotation = 0, bool active = true)
     {
         this.o = o;
         this.Pos = new Vector2(o.transform.position.x,o.transform.position.y);
         this.Size = Size;
         this.offset = offset;
         this.active = active;
-        this.layers = layers;
         this.rotation = rotation;
         points = calcpoints();
 
@@ -39,11 +34,19 @@ public class MyCollider
             Vector2 b = Size;
             if(i % 2 == 0)
             {
-                b.x *= -1;
+                b.x =b.x * -1 /2;
+            }
+            else
+            {
+                b.x = b.x/ 2;
             }
             if (i >= 2)
             {
-                b.y *= -1;
+                b.y =b.y * -1 /2;
+            }
+            else
+            {
+                b.y = b.y /2;
             }
             b = new Vector2(b.x*cosA + b.y*sinA,b.y * cosA - b.x * sinA);
             a[i] = b + totaloffset;
@@ -129,9 +132,11 @@ public class MyCollider
         return false;
     }
     
-    public void Aligntoparent()
+    public void Aligntoparent(Vector2 Size)
     {
         Pos = new Vector2(o.transform.position.x,o.transform.position.y);
+        this.Size = Size;
+        points = calcpoints();
     }
     public Vector2 getpos()
     {
