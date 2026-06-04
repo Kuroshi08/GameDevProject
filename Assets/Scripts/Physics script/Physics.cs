@@ -3,10 +3,11 @@ using Unity.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.SceneManagement;
 /// <summary>
 /// make into monobehavior
 /// </summary>
-public class MyPhysics
+public class MyPhysics : MonoBehaviour
 {
     float mass;
     bool[] lockXY = new bool[2];
@@ -14,38 +15,42 @@ public class MyPhysics
     Vector2 vel;
     bool isGrounded;
     float Gravity = 9.8f;
-    BoxCollider2D colliderx;
-    BoxCollider2D collidery;
-    GameObject o;
+    MyCollider vCollider;
 
 
     //make this also a comp, use My colliderdirectly
-    public MyPhysics(GameObject o)
+    void Awake()
     {
-        this.o = o;
-        colliderx = o.AddComponent<BoxCollider2D>();
-        collidery = o.AddComponent<BoxCollider2D>();
+        vCollider = gameObject.AddComponent<MyCollider>();
     }
     public void MoveObject(Vector2 vel, string onlyAffectTag = null)
     {
-        List<Collider2D> colliderxR = new List<Collider2D>();
-        List<Collider2D> collideryR = new List<Collider2D>();
-        
-        colliderx.size = new Vector2(Math.Abs(vel.x),1);
-        colliderx.offset = new Vector2(Math.Abs(vel.x/2) + (o.transform.localScale.x/2),0);
-        
-        collidery.size = new Vector2(1,Math.Abs(vel.y));
-        collidery.offset = new Vector2(0,Math.Abs(vel.y/2) + (o.transform.localScale.y/2));
-        colliderx.Overlap(colliderxR);
-        collidery.Overlap(collideryR);
+        List<UnityEngine.Object> vcolliderr = new List<UnityEngine.Object>();
+        ///////////////write point based( gen points based on positive x * y + vector speed, left right based on positive x)
+        Vector2[] points = new Vector2[4];
+        Vector2[] tempPoints = new Vector2[2];
+        float c = vel.x / Math.Abs(vel.x) * vel.y / Math.Abs(vel.y);
+        for(int i = 0; i < 2;i ++)
+        {
+            tempPoints[i] = new Vector2(transform.lossyScale.x/2 * (float)Math.Pow(-1,2) + transform.position.x, transform.lossyScale.y/2 * (float)Math.Pow(-1,2) * c + transform.position.y);
+        }
+        for(int i = 1; i < 3; i++)
+        {
+            float p = vel.x / Math.Abs(vel.x);
+            Vector2 a = tempPoints[i-1] + vel;
+            points[(int)(0.5 + p/2)] = tempPoints[i-1];
+            points[(int)(0.5 - p/2)] = a;
 
-        if(colliderxR.Count != 0)
+        }
+        vCollider.ChangePoints(points);
+        vcolliderr = vCollider.getallcollisions();
+        if(vcolliderr.Count != 0)
         {
             float minDistanceX = vel.x;
             
-            foreach(Collider2D collider in colliderxR)
+            foreach(MyCollider collider in vcolliderr)
             {
-                if(collider.gameObject == o)
+                if(collider.gameObject == gameObject)
                 {
                     
                     break;
@@ -59,7 +64,7 @@ public class MyPhysics
             }
             vel.x = minDistanceX;
         }
-        o.transform.Translate(vel);
+        transform.Translate(vel);
     }
     bool IsGround(GameObject o)
     {

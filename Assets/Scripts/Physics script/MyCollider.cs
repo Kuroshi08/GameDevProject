@@ -72,17 +72,28 @@ public class MyCollider : MonoBehaviour
 
 
 
-    public bool ColliderIntersect(MyCollider a)
+    public List<Vector2[]> ColliderIntersect(MyCollider a)
     {
+        List<Vector2[]> sad = new List<Vector2[]>();
         foreach(Vector2[] wall1 in this.GetWalls())
         {
             foreach(Vector2[] wall2 in a.GetWalls())
                 if (doIntersect(wall1, wall2))
                 {
-                    return true;
+                    sad.Add(wall2);
                 }
         }
-        return false;
+        if(sad.Count == 0)
+        {
+            return null;
+        }
+        return sad;
+    }
+
+    public List<int> ColliderIntersectLine()
+    {
+        ////wrtie
+        return null;
     }
     bool onSegment(Vector2 p, Vector2 q, Vector2 r) {
         return (q[0] <= Math.Max(p[0], r[0]) && 
@@ -159,19 +170,13 @@ public class MyCollider : MonoBehaviour
         return Size;
     }
 
-    UnityEngine.Object[] allGOwithCol()
-    {
-        UnityEngine.Object[] a;
-        a = FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None);
-        return a;
-    }
-    List<UnityEngine.Object> getallcollisions(UnityEngine.Object[] ol)
+    public List<UnityEngine.Object> getallcollisions()
     {
         List<UnityEngine.Object> a = new List<UnityEngine.Object>();
-        foreach(UnityEngine.Object ob in ol)
+        foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
         {
             MyCollider obcol = ob.GetComponent<MyCollider>();
-            bool boolcheck = this.ColliderIntersect(obcol);
+            bool boolcheck = (this.ColliderIntersect(obcol)!=null);
             if (boolcheck && obcol != this)
             {
                 a.Add(ob);
@@ -185,7 +190,7 @@ public class MyCollider : MonoBehaviour
         {
             Debug.Log(point);
         }
-        Debug.Log(getallcollisions(allGOwithCol()).Count); 
+        Debug.Log(getallcollisions().Count); 
     }
     void FixedUpdate()
     {
