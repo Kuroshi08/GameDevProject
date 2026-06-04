@@ -3,25 +3,28 @@ using Unity.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-public class MyCollider
+using Unity.VisualScripting;
+public class MyCollider : MonoBehaviour
 {
-    public GameObject o;
     Vector2 Pos;
     public Vector2 Size;
     Vector2 offset;
     public Vector2[] points = new Vector2[4];
     float rotation;
     bool active;
-    public MyCollider(GameObject o, Vector2 Size, Vector2 offset,float rotation = 0, bool active = true)
+    bool useparentscale = true;
+    bool manualPoints = false;
+    List<float> activeLayers = new List<float>();
+    void Awake()
     {
-        this.o = o;
-        this.Pos = new Vector2(o.transform.position.x,o.transform.position.y);
-        this.Size = Size;
-        this.offset = offset;
-        this.active = active;
-        this.rotation = rotation;
-        points = calcpoints();
-
+        this.Pos = new Vector2(transform.position.x,transform.position.y);
+        this.Size = this.transform.lossyScale;
+        this.rotation = transform.rotation.eulerAngles.z;
+        if (!manualPoints)
+        {
+            points = calcpoints();
+        }
+        
     }
     Vector2[] calcpoints()
     {
@@ -134,9 +137,18 @@ public class MyCollider
     
     public void Aligntoparent(Vector2 Size)
     {
-        Pos = new Vector2(o.transform.position.x,o.transform.position.y);
+        Pos = new Vector2(transform.position.x,transform.position.y);
         this.Size = Size;
-        points = calcpoints();
+        if (!manualPoints)
+        {
+            points = calcpoints();
+        }
+        
+    }
+    public void ChangePoints(Vector2[] newPoints)
+    {
+        this.points = newPoints;
+        manualPoints = true;
     }
     public Vector2 getpos()
     {
@@ -145,6 +157,44 @@ public class MyCollider
     public Vector2 getscale()
     {
         return Size;
+    }
+
+    UnityEngine.Object[] allGOwithCol()
+    {
+        UnityEngine.Object[] a;
+        a = FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None);
+        return a;
+    }
+    List<UnityEngine.Object> getallcollisions(UnityEngine.Object[] ol)
+    {
+        List<UnityEngine.Object> a = new List<UnityEngine.Object>();
+        foreach(UnityEngine.Object ob in ol)
+        {
+            MyCollider obcol = ob.GetComponent<MyCollider>();
+            bool boolcheck = this.ColliderIntersect(obcol);
+            if (boolcheck && obcol != this)
+            {
+                a.Add(ob);
+            }
+        }
+        return a;
+    }
+    void Update()
+    {
+        foreach(Vector2 point in points)
+        {
+            Debug.Log(point);
+        }
+        Debug.Log(getallcollisions(allGOwithCol()).Count); 
+    }
+    void FixedUpdate()
+    {
+        if (useparentscale)
+        {
+            Size = transform.lossyScale;
+        }
+
+        Aligntoparent(transform.lossyScale);
     }
 }
 
