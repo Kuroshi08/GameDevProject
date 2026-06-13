@@ -22,7 +22,7 @@ public class BasicMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        P = new MyPhysics(this.gameObject);
+        P = gameObject.AddComponent<MyPhysics>();
     }
     void Start()
     {
@@ -85,9 +85,10 @@ public class BasicMovement : MonoBehaviour
         }
         decaySpeedY();
         decaySpeedX();
+        P.MoveObject(vel * Time.deltaTime);
     }
     void FixedUpdate()
     {
-        P.MoveObject(vel * Time.deltaTime);
+        
     }
 }

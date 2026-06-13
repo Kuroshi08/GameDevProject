@@ -6,14 +6,17 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 public class MyCollider : MonoBehaviour
 {
+    Mathstuff MyMathStuff = new Mathstuff();
+    public List<string> tags = new List<string>();
     Vector2 Pos;
-    public Vector2 Size;
+    Vector2 Size;
     Vector2 offset;
-    public Vector2[] points = new Vector2[4];
+    Vector2[] points = new Vector2[4];
     float rotation;
-    bool active;
+    bool active = true;
     bool useparentscale = true;
     bool manualPoints = false;
+    bool manualPos = false;
     List<float> activeLayers = new List<float>();
     void Awake()
     {
@@ -69,19 +72,48 @@ public class MyCollider : MonoBehaviour
     {
         active = state;
     }
+    public bool getState()
+    {
+        return active;
+    }
 
 
 
     public List<Vector2[]> ColliderIntersect(MyCollider a)
-    {
+    {   
         List<Vector2[]> sad = new List<Vector2[]>();
         foreach(Vector2[] wall1 in this.GetWalls())
         {
             foreach(Vector2[] wall2 in a.GetWalls())
-                if (doIntersect(wall1, wall2))
+                if (MyMathStuff.doIntersect(wall1, wall2))
                 {
                     sad.Add(wall2);
                 }
+        }
+        if(sad.Count == 0)
+        {
+            if (ColliderInSelf(a)){
+                foreach(Vector2[] wall in a.GetWalls())
+                {
+                    sad.Add(wall);
+                }
+                return sad;
+            }
+            return null;
+        }
+        return sad;
+    }
+
+    public List<Vector2[]> ColliderIntersectLine(Vector2[] line)
+    {
+        /// returns walls that intersects line
+        List<Vector2[]> sad = new List<Vector2[]>();
+        foreach(Vector2[] walls in this.GetWalls())
+        {
+            if (MyMathStuff.doIntersect(walls, line))
+            {
+                sad.Add(walls);
+            }
         }
         if(sad.Count == 0)
         {
@@ -89,64 +121,17 @@ public class MyCollider : MonoBehaviour
         }
         return sad;
     }
-
-    public List<int> ColliderIntersectLine()
-    {
-        ////wrtie
-        return null;
-    }
-    bool onSegment(Vector2 p, Vector2 q, Vector2 r) {
-        return (q[0] <= Math.Max(p[0], r[0]) && 
-                q[0] >= Math.Min(p[0], r[0]) &&
-                q[1] <= Math.Max(p[1], r[1]) && 
-                q[1] >= Math.Min(p[1], r[1]));
-    }
-    int orientation(Vector2 p, Vector2 q, Vector2 r)
-    {
-        float val = (q[1] - p[1]) * (r[0] - q[0]) -
-                  (q[0] - p[0]) * (r[1] - q[1]);
-
-        // collinear
-        if (val == 0) return 0;
-
-        // clock or counterclock wise
-        // 1 for clockwise, 2 for counterclockwise
-        return (val > 0) ? 1 : 2;
-    }
-    bool doIntersect(Vector2[] line1, Vector2[] line2) {
-        Vector2[][] points = new Vector2[][] {line1,line2};
-        // find the four orientations needed
-        // for general and special cases
-        int o1 = orientation(points[0][0], points[0][1], points[1][0]);
-        int o2 = orientation(points[0][0], points[0][1], points[1][1]);
-        int o3 = orientation(points[1][0], points[1][1], points[0][0]);
-        int o4 = orientation(points[1][0], points[1][1], points[0][1]);
-
-        // general case
-        if (o1 != o2 && o3 != o4)
+    bool ColliderInSelf(MyCollider col)
+    {   
+        if(col.Pos.x < Pos.x+Size.x && col.Pos.x > Pos.x-Size.x && col.Pos.y < Pos.y+Size.y && col.Pos.y > Pos.y - Size.y)
+        {
             return true;
-
-        // special cases
-        // p1, q1 and p2 are collinear and p2 lies on segment p1q1
-        if (o1 == 0 &&
-        onSegment(points[0][0], points[1][0], points[0][1])) return true;
-
-        // p1, q1 and q2 are collinear and q2 lies on segment p1q1
-        if (o2 == 0 &&
-        onSegment(points[0][0], points[1][1], points[0][1])) return true;
-
-        // p2, q2 and p1 are collinear and p1 lies on segment p2q2
-        if (o3 == 0 &&
-        onSegment(points[1][0], points[0][0], points[1][1])) return true;
-
-        // p2, q2 and q1 are collinear and q1 lies on segment p2q2 
-        if (o4 == 0 &&
-        onSegment(points[1][0], points[0][1], points[1][1])) return true;
-
+        }
         return false;
     }
+
     
-    public void Aligntoparent(Vector2 Size)
+    void Aligntoparent(Vector2 Size)
     {
         Pos = new Vector2(transform.position.x,transform.position.y);
         this.Size = Size;
@@ -156,10 +141,42 @@ public class MyCollider : MonoBehaviour
         }
         
     }
+    public void AddTags(string t)
+    {
+        foreach(string tag in tags)
+        {
+            if(tag == t)
+            {
+                return;
+            }
+        }
+        tags.Add(t);
+    }
+    public List<string> GetTags()
+    {
+        return tags;
+    }
     public void ChangePoints(Vector2[] newPoints)
     {
         this.points = newPoints;
         manualPoints = true;
+    }
+    public void AutoPoints()
+    {
+        manualPoints = false;
+    }
+    public void ChangeOffset(Vector2 offset )
+    {
+        this.offset = offset;
+    }
+    public void ChangeScale(Vector2 scale)
+    {
+        this.Size = scale;
+        useparentscale = false;
+    }
+    public void AutoScale()
+    {
+        useparentscale = true;
     }
     public Vector2 getpos()
     {
@@ -170,27 +187,34 @@ public class MyCollider : MonoBehaviour
         return Size;
     }
 
-    public List<UnityEngine.Object> getallcollisions()
+    public List<MyCollider> getallcollisions()
     {
-        List<UnityEngine.Object> a = new List<UnityEngine.Object>();
+        if (useparentscale)
+        {
+            Size = transform.lossyScale;
+        }
+
+        Aligntoparent(Size);
+        List<MyCollider> a = new List<MyCollider>();
         foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
         {
             MyCollider obcol = ob.GetComponent<MyCollider>();
             bool boolcheck = (this.ColliderIntersect(obcol)!=null);
-            if (boolcheck && obcol != this)
+            if (boolcheck && obcol.gameObject != gameObject && obcol.getState())
             {
-                a.Add(ob);
+                a.Add(obcol);
             }
         }
         return a;
     }
     void Update()
     {
-        foreach(Vector2 point in points)
+        if (useparentscale)
         {
-            Debug.Log(point);
+            Size = transform.lossyScale;
         }
-        Debug.Log(getallcollisions().Count); 
+
+        Aligntoparent(Size);
     }
     void FixedUpdate()
     {
@@ -199,7 +223,7 @@ public class MyCollider : MonoBehaviour
             Size = transform.lossyScale;
         }
 
-        Aligntoparent(transform.lossyScale);
+        Aligntoparent(Size);
     }
 }
 
