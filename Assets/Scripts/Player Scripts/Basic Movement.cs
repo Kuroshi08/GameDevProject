@@ -13,6 +13,7 @@ public class BasicMovement : MonoBehaviour
     public float maxwalkvelX = 1;
     public float speed= 0.2f;
     public Vector2 velmod;
+    float pgrav = 9.8f;
 
     MyPhysics P;
 
@@ -60,13 +61,13 @@ public class BasicMovement : MonoBehaviour
             vel.x = 0;
         }
     }
-    void decaySpeedY()
+    void grav()
     {
-        vel.y *= velDecayY;
-        if(Math.Abs(vel.y) < 0.001)
+        if(vel.y > -pgrav)
         {
-            vel.y = 0;
+            vel.y -= velDecayY;
         }
+        
     }
     // Update is called once per frame
     void Update()
@@ -83,12 +84,11 @@ public class BasicMovement : MonoBehaviour
         {
             Jump();
         }
-        decaySpeedY();
+        grav();
         decaySpeedX();
         P.MoveObject(vel * Time.deltaTime);
     }
     void FixedUpdate()
     {
-        
     }
 }

@@ -76,12 +76,40 @@ public class MyPhysics : MonoBehaviour
             }
             
         }
+        /// if only y
+        if(vel.y != 0 && vel.x == 0)
+        {
+            List<float> yvalues = new List<float>();
+            float ypos = vel.y/Math.Abs(vel.y);
+            vCollider.ChangeOffset(new Vector2(0 ,vel.y/2 + (transform.lossyScale.y/2 * ypos)));
+            vCollider.ChangeScale(new Vector2(transform.lossyScale.x,Math.Abs(vel.y)));
+            vcolliderr = vCollider.getallcollisions();
+            if(vcolliderr.Count != 0)
+            {
+                
+                foreach(MyCollider col in vcolliderr)
+                {
+                    yvalues.Add(col.getpos().y + col.getscale().y/2);
+                    yvalues.Add(col.getpos().y - col.getscale().y/2);
+                    
+                }
+                if(vel.y > 0)
+                {
+
+                    vel.y = yvalues.Min() - (transform.position.y + transform.lossyScale.y/2);
+
+                }
+                else
+                {
+                   vel.y = yvalues.Max() - (transform.position.y - transform.lossyScale.y/2); 
+                }
+            }
+            
+        } 
         /// 
         /// 
         /// 
-        /// 
-        /// 
-        /// 
+        /// both xy
         
         // Vector2[] points = new Vector2[4];
         // Vector2[] tempPoints = new Vector2[2];
