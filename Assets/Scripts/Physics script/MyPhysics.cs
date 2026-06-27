@@ -111,44 +111,54 @@ public class MyPhysics : MonoBehaviour
         /// 
         /// both xy
         
-        // Vector2[] points = new Vector2[4];
-        // Vector2[] tempPoints = new Vector2[2];
-        // float c = vel.x / Math.Abs(vel.x) * vel.y / Math.Abs(vel.y);
-        // for(int i = 1; i < 3;i ++)
-        // {
-        //     tempPoints[i] = new Vector2(transform.lossyScale.x/2 * (float)Math.Pow(c,i) + transform.position.x, transform.lossyScale.y/2 * (float)Math.Pow(c,i) * c + transform.position.y);
-        // }
-        // for(int i = 1; i < 3; i++)
-        // {
-        //     float p = vel.x / Math.Abs(vel.x);
-        //     Vector2 a = tempPoints[i-1] + vel;
-        //     points[(int)(0.5 + p/2) + i] = tempPoints[i-1];
-        //     points[(int)(0.5 - p/2) + i] = a;
+        if(vel.y != 0 && vel.x != 0)
+        {
+            eCollider.ChangeOffset(vel);
+            Vector2[] spoints = new Vector2[2];
+            Vector2[] rpoints = new Vector2[4];
+            if((vel.x/Math.Abs(vel.x)) == (vel.y / Math.Abs(vel.y))){
+                spoints[0] = new Vector2(selfcollider.getpos().x - selfcollider.getscale().x,selfcollider.getpos().y + selfcollider.getscale().y); //top left
+                spoints[1] = new Vector2(selfcollider.getpos().x + selfcollider.getscale().x,selfcollider.getpos().y - selfcollider.getscale().y); //bottom right
+                
+                
+            }
+            else
+            {
+                spoints[0] = selfcollider.getpos() + selfcollider.getscale(); //top right
+                spoints[1] = selfcollider.getpos() - selfcollider.getscale(); //bottom left
 
-        // }
-        // vCollider.ChangePoints(points);
-        // vcolliderr = vCollider.getallcollisions();
-        // if(vcolliderr.Count != 0)
-        // {
-        //     float minDistanceX = vel.x;
-            
-        //     foreach(MyCollider collider in vcolliderr)
-        //     {
-        //         if(collider.gameObject == gameObject)
-        //         {
-                    
-        //             break;
-        //         }
-        //         float colfacex = (collider.offset.x) * -vel.x/Math.Abs(vel.x) + collider.gameObject.transform.position.x; 
-        //         float reldistanceX = colfacex - o.transform.position.x; 
-        //         if(Math.Abs(reldistanceX) < Math.Abs(minDistanceX))
-        //         {
-        //             minDistanceX = reldistanceX;
-        //         }
-        //     }
-        //     vel.x = minDistanceX;
-        // }
+            }
+            if(vel.x > 0)
+            {
+                
+                rpoints[0] = spoints[0] + vel;
+                rpoints[1] = spoints[0];
+                rpoints[2] = spoints[1] + vel;
+                rpoints[3] = spoints[1];
+            }
+            else
+            {
+                rpoints[1] = spoints[0] + vel;
+                rpoints[0] = spoints[0];
+                rpoints[3] = spoints[1] + vel;
+                rpoints[2] = spoints[1];
+            }
+            vCollider.ChangePoints(rpoints);
 
+
+
+            vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> ecolliderr = eCollider.getallcollisions(); 
+            foreach(MyCollider col in ecolliderr)
+            {
+                if(!vcolliderr.Contains(col))
+                {
+                   vcolliderr.Add(col); 
+                }
+            }
+
+            /// now detect if object should take x or y val () use intesect point, if d1 < d2 get d1 x or y to list, get min of list
+        }
         transform.Translate(vel);
     }
     bool IsGround(GameObject o)
