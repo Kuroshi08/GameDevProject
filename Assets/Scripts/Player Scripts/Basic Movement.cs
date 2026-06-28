@@ -86,7 +86,7 @@ public class BasicMovement : MonoBehaviour
         }
         grav();
         decaySpeedX();
-        P.MoveObject(vel * Time.deltaTime);
+        P.MoveObject(vel* Time.deltaTime);
     }
     void FixedUpdate()
     {

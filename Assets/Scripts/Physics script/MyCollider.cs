@@ -16,7 +16,7 @@ public class MyCollider : MonoBehaviour
     bool active = true;
     bool useparentscale = true;
     bool manualPoints = false;
-    bool manualPos = false;
+    
     List<float> activeLayers = new List<float>();
     void Awake()
     {
@@ -79,29 +79,25 @@ public class MyCollider : MonoBehaviour
 
 
 
-    public List<Vector2[]> ColliderIntersect(MyCollider a)
+    public bool ColliderIntersect(MyCollider a)
     {   
-        List<Vector2[]> sad = new List<Vector2[]>();
+        if (ColliderInSelf(a))
+        {
+            return true;
+        }
+        if (a.ColliderInSelf(this))
+        {
+            return true;
+        }
         foreach(Vector2[] wall1 in this.GetWalls())
         {
             foreach(Vector2[] wall2 in a.GetWalls())
                 if (MyMathStuff.doIntersect(wall1, wall2))
                 {
-                    sad.Add(wall2);
+                    return true;
                 }
         }
-        if(sad.Count == 0)
-        {
-            if (ColliderInSelf(a)){
-                foreach(Vector2[] wall in a.GetWalls())
-                {
-                    sad.Add(wall);
-                }
-                return sad;
-            }
-            return null;
-        }
-        return sad;
+        return false;
     }
 
     public List<Vector2[]> ColliderIntersectLine(Vector2[] line)
@@ -123,7 +119,7 @@ public class MyCollider : MonoBehaviour
     }
     bool ColliderInSelf(MyCollider col)
     {   
-        if(col.Pos.x < Pos.x+Size.x && col.Pos.x > Pos.x-Size.x && col.Pos.y < Pos.y+Size.y && col.Pos.y > Pos.y - Size.y)
+        if(col.getcalpos().x< Pos.x+(Size.x/2) && col.getcalpos().x > Pos.x-(Size.x/2) && col.getcalpos().y < Pos.y+(Size.y/2) && col.getcalpos().y > Pos.y -(Size.y/2))
         {
             return true;
         }
@@ -178,6 +174,14 @@ public class MyCollider : MonoBehaviour
     {
         useparentscale = true;
     }
+    public Vector2 getoffset()
+    {
+        return offset;
+    }
+    public Vector2 getcalpos()
+    {
+        return Pos + offset;
+    }
     public Vector2 getpos()
     {
         return Pos;
@@ -199,7 +203,7 @@ public class MyCollider : MonoBehaviour
         foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
         {
             MyCollider obcol = ob.GetComponent<MyCollider>();
-            bool boolcheck = (this.ColliderIntersect(obcol)!=null);
+            bool boolcheck = this.ColliderIntersect(obcol);
             if (boolcheck && obcol.gameObject != gameObject && obcol.getState())
             {
                 a.Add(obcol);
@@ -215,6 +219,7 @@ public class MyCollider : MonoBehaviour
         }
 
         Aligntoparent(Size);
+
     }
     void FixedUpdate()
     {
