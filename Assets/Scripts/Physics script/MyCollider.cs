@@ -7,10 +7,42 @@ using Unity.VisualScripting;
 public class MyCollider : MonoBehaviour
 {
     Mathstuff MyMathStuff = new Mathstuff();
-    public List<string> tags = new List<string>();
-    Vector2 Pos;
+    List<string> Tags = new List<string>();
+    List<string> tags
+    {
+        get => Tags;
+        set
+        {
+            foreach(string tag in value)
+            {
+                if (!Tags.Contains(tag))
+                {
+                    Tags.Add(tag);
+                }
+            }
+            
+        }
+    }
+    public Vector2 Pos {get; private set;}
     Vector2 Size;
-    Vector2 offset;
+    public Vector2 size
+    {
+        get => Size;
+        set
+        {
+            Size = value;
+            useparentscale = false;
+        }
+    }
+    Vector2 Offset;
+   public Vector2 offset
+    {
+        get => Offset;
+        set
+        {
+            Offset = value;       
+        }
+    }
     Vector2[] points = new Vector2[4];
     float rotation;
     bool active = true;
@@ -32,7 +64,7 @@ public class MyCollider : MonoBehaviour
     Vector2[] calcpoints()
     {
         Vector2[] a = new Vector2[4];
-        Vector2 totaloffset = Pos + offset;
+        Vector2 totalOffset = Pos + Offset;
         float sinA = (float)Math.Sin(rotation);
         float cosA = (float)Math.Cos(rotation);
         for(int i = 0; i < 4; i++)
@@ -55,7 +87,7 @@ public class MyCollider : MonoBehaviour
                 b.y = b.y /2;
             }
             b = new Vector2(b.x*cosA + b.y*sinA,b.y * cosA - b.x * sinA);
-            a[i] = b + totaloffset;
+            a[i] = b + totalOffset;
         }
         return a;
     }
@@ -81,6 +113,7 @@ public class MyCollider : MonoBehaviour
 
     public bool ColliderIntersect(MyCollider a)
     {   
+        Aligntoparent();
         if (ColliderInSelf(a))
         {
             return true;
@@ -103,10 +136,10 @@ public class MyCollider : MonoBehaviour
     public List<Vector2[]> ColliderIntersectLine(Vector2[] line)
     {
         /// returns walls that intersects line
+        Aligntoparent();
         List<Vector2[]> sad = new List<Vector2[]>();
         foreach(Vector2[] walls in this.GetWalls())
         {
-            Debug.Log($"{walls[0]-walls[1]},{MyMathStuff.GetIntersection(walls, line) != null}");
             if (MyMathStuff.GetIntersection(walls, line) != null)
             {
                 sad.Add(walls);
@@ -120,6 +153,7 @@ public class MyCollider : MonoBehaviour
     }
     bool ColliderInSelf(MyCollider col)
     {   
+        Aligntoparent();
         if(col.getcalpos().x< Pos.x+(Size.x/2) && col.getcalpos().x > Pos.x-(Size.x/2) && col.getcalpos().y < Pos.y+(Size.y/2) && col.getcalpos().y > Pos.y -(Size.y/2))
         {
             return true;
@@ -129,21 +163,30 @@ public class MyCollider : MonoBehaviour
 
     bool PointInSelf(Vector2 point)
     {
-        if((point.x <= Pos.x + offset.x + (Size.x / 2)) && (point.x >= Pos.x + offset.x - (Size.x / 2)) && (point.y <= Pos.y + offset.y + (Size.y / 2)) && (point.y >= Pos.y + offset.y - (Size.y / 2)))
+        Aligntoparent();
+        if((point.x <= Pos.x + Offset.x + (Size.x / 2)) && (point.x >= Pos.x + Offset.x - (Size.x / 2)) && (point.y <= Pos.y + Offset.y + (Size.y / 2)) && (point.y >= Pos.y + Offset.y - (Size.y / 2)))
         {
             return true;
         }
         return false;
     }
-    void Aligntoparent(Vector2 Size)
+    void Aligntoparent()
     {
+
         Pos = new Vector2(transform.position.x,transform.position.y);
-        this.Size = Size;
+        ChangeScale();
         if (!manualPoints)
         {
             points = calcpoints();
         }
         
+    }
+    void ChangeScale()
+    {
+        if (useparentscale)
+        {
+            this.Size = transform.lossyScale;
+        }
     }
     public void AddTags(string t)
     {
@@ -156,10 +199,6 @@ public class MyCollider : MonoBehaviour
         }
         tags.Add(t);
     }
-    public List<string> GetTags()
-    {
-        return tags;
-    }
     public void ChangePoints(Vector2[] newPoints)
     {
         this.points = newPoints;
@@ -169,44 +208,19 @@ public class MyCollider : MonoBehaviour
     {
         manualPoints = false;
     }
-    public void ChangeOffset(Vector2 offset )
-    {
-        this.offset = offset;
-    }
-    public void ChangeScale(Vector2 scale)
-    {
-        this.Size = scale;
-        useparentscale = false;
-    }
     public void AutoScale()
     {
         useparentscale = true;
     }
-    public Vector2 getoffset()
-    {
-        return offset;
-    }
     public Vector2 getcalpos()
     {
-        return Pos + offset;
+        return Pos + Offset;
     }
-    public Vector2 getpos()
-    {
-        return Pos;
-    }
-    public Vector2 getscale()
-    {
-        return Size;
-    }
+
 
     public List<MyCollider> getallcollisions()
     {
-        if (useparentscale)
-        {
-            Size = transform.lossyScale;
-        }
-
-        Aligntoparent(Size);
+        Aligntoparent();
         List<MyCollider> a = new List<MyCollider>();
         foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
         {
@@ -221,22 +235,15 @@ public class MyCollider : MonoBehaviour
     }
     void Update()
     {
-        if (useparentscale)
-        {
-            Size = transform.lossyScale;
-        }
 
-        Aligntoparent(Size);
+
+        Aligntoparent();
 
     }
     void FixedUpdate()
     {
-        if (useparentscale)
-        {
-            Size = transform.lossyScale;
-        }
 
-        Aligntoparent(Size);
+        Aligntoparent();
     }
 }
 

@@ -48,10 +48,11 @@ public class MyPhysics : MonoBehaviour
 
         if(vel.y == 0 && vel.x != 0)
         {
+            vCollider.AutoPoints();
             List<float> xvalues = new List<float>();
             float xpos = vel.x/Math.Abs(vel.x);
-            vCollider.ChangeOffset(new Vector2(vel.x/2 + (selfcollider.getscale().x/2 * xpos) ,0));
-            vCollider.ChangeScale(new Vector2(Math.Abs(vel.x)/2,selfcollider.getscale().y));
+            vCollider.offset = (new Vector2(vel.x/2 + (selfcollider.size.x/2 * xpos) ,0));
+            vCollider.size = (new Vector2(Math.Abs(vel.x)/2,selfcollider.size.y));
             vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
@@ -59,19 +60,35 @@ public class MyPhysics : MonoBehaviour
                 foreach(MyCollider col in vcolliderr)
                 {
 
-                    xvalues.Add(col.getpos().x + col.getscale().x/2);
-                    xvalues.Add(col.getpos().x - col.getscale().x/2);
+                    if(vel.x > 0)
+                    {
+                        if(col.Pos.x - col.size.x/2 >= (selfcollider.Pos.x + selfcollider.size.x / 2))
+                        {
+                            xvalues.Add(col.Pos.x - col.size.x/2);
+                        }
+                        
+                    }
+                    if(vel.x < 0)
+                    {
+                        if(col.Pos.x + col.size.x/2 <= (selfcollider.Pos.x - selfcollider.size.x / 2))
+                        {
+                            xvalues.Add(col.Pos.x + col.size.x/2);
+                        }
+                    }
                     
                 }
-                if(vel.x > 0)
+                if(xvalues.Count > 0)
                 {
+                    if(vel.x > 0)
+                    {
+                        
+                        vel.x = xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2);
 
-                    vel.x = xvalues.Min() - (selfcollider.getpos().x + selfcollider.getscale().x/2);
-
-                }
-                else
-                {
-                   vel.x = xvalues.Max() - (selfcollider.getpos().x - selfcollider.getscale().x/2); 
+                    }
+                    else
+                    {
+                    vel.x = xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2); 
+                    }
                 }
             }
             
@@ -79,30 +96,49 @@ public class MyPhysics : MonoBehaviour
         /// if only y
         if(vel.y != 0 && vel.x == 0)
         {
+            vCollider.AutoPoints();
             List<float> yvalues = new List<float>();
             float ypos = vel.y/Math.Abs(vel.y);
-            vCollider.ChangeOffset(new Vector2(0 ,vel.y/2 + (selfcollider.getscale().y/2 * ypos)));
-            vCollider.ChangeScale(new Vector2(selfcollider.getscale().x,Math.Abs(vel.y)));
+            vCollider.offset = (new Vector2(0 ,vel.y/2 + (selfcollider.size.y/2 * ypos)));
+            vCollider.size = (new Vector2(selfcollider.size.x,Math.Abs(vel.y)));
             vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
-                
+
                 foreach(MyCollider col in vcolliderr)
                 {
-                    yvalues.Add(col.getpos().y + col.getscale().y/2);
-                    yvalues.Add(col.getpos().y - col.getscale().y/2);
+                    if(vel.y > 0)
+                    {
+                        if(col.Pos.y - col.size.y/2 >= (selfcollider.Pos.y + selfcollider.size.y / 2))
+                        {
+                            yvalues.Add(col.Pos.y - col.size.y/2);
+                        }
+                        
+                    }
+                    if(vel.y < 0)
+                    {
+                        if(col.Pos.y + col.size.y/2 <= (selfcollider.Pos.y - selfcollider.size.y / 2))
+                        {
+                            yvalues.Add(col.Pos.y + col.size.y/2);
+                        }
+                    }
+                    
                     
                 }
-                if(vel.y > 0)
+                if(yvalues.Count > 0)
                 {
+                    if(vel.y > 0)
+                    {
+                        
+                        vel.y = yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2);
 
-                    vel.y = yvalues.Min() - (selfcollider.getpos().y + selfcollider.getscale().y/2);
-
+                    }
+                    else
+                    {
+                    vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2); 
+                    }
                 }
-                else
-                {
-                   vel.y = yvalues.Max() - (selfcollider.getpos().y - selfcollider.getscale().y/2); 
-                }
+                
             }
             
         } 
@@ -115,20 +151,20 @@ public class MyPhysics : MonoBehaviour
         {
             List<float> xvalues = new List<float>();
             List<float> yvalues = new List<float>();
-            eCollider.ChangeOffset(vel);
-            eCollider.ChangeScale(selfcollider.getscale());
+            eCollider.offset = vel;
+            eCollider.size = (selfcollider.size);
             Vector2[] spoints = new Vector2[2];
             Vector2[] rpoints = new Vector2[4];
             if((vel.x/Math.Abs(vel.x)) == (vel.y / Math.Abs(vel.y))){
-                spoints[0] = new Vector2(selfcollider.getpos().x - (selfcollider.getscale().x/2),selfcollider.getpos().y + (selfcollider.getscale().y/2)); //top left
-                spoints[1] = new Vector2(selfcollider.getpos().x + (selfcollider.getscale().x/2),selfcollider.getpos().y - (selfcollider.getscale().y/2)); //bottom right
+                spoints[0] = new Vector2(selfcollider.Pos.x - (selfcollider.size.x/2),selfcollider.Pos.y + (selfcollider.size.y/2)); //top left
+                spoints[1] = new Vector2(selfcollider.Pos.x + (selfcollider.size.x/2),selfcollider.Pos.y - (selfcollider.size.y/2)); //bottom right
                 
                 
             }
             else
             {
-                spoints[0] = selfcollider.getpos() + (selfcollider.getscale()/2); //top right
-                spoints[1] = selfcollider.getpos() - (selfcollider.getscale()/2); //bottom left
+                spoints[0] = selfcollider.Pos + (selfcollider.size/2); //top right
+                spoints[1] = selfcollider.Pos - (selfcollider.size/2); //bottom left
 
             }
             if(vel.x > 0)
@@ -161,7 +197,7 @@ public class MyPhysics : MonoBehaviour
             ///////
 
             /// now detect if object should take x or y val () use intesect point, if d1 < d2 get d1 x or y to list, get min of list
-            Vector2 cpoint = selfcollider.getpos() + new Vector2(selfcollider.getscale().x/2 * vel.x / Math.Abs(vel.x),selfcollider.getscale().y * vel.y / Math.Abs(vel.y)/2) ;
+            Vector2 cpoint = selfcollider.Pos + new Vector2(selfcollider.size.x/2 * vel.x / Math.Abs(vel.x),selfcollider.size.y * vel.y / Math.Abs(vel.y)/2) ;
             Vector2[] cline = new Vector2[2] {cpoint,cpoint+vel};
             foreach(MyCollider col in vcolliderr)
             {
@@ -213,26 +249,26 @@ public class MyPhysics : MonoBehaviour
                     {
                         if((point.y - selfcollider.getcalpos().y) > (correctedy - selfcollider.getcalpos().y))
                         {
-                            yvalues.Add(col.getpos().y + col.getscale().y/2);
-                            yvalues.Add(col.getpos().y - col.getscale().y/2);
+                            yvalues.Add(col.Pos.y + col.size.y/2);
+                            yvalues.Add(col.Pos.y - col.size.y/2);
                         }
                         else
                         {
-                            xvalues.Add(col.getpos().x + col.getscale().x/2);
-                            xvalues.Add(col.getpos().x - col.getscale().x/2);
+                            xvalues.Add(col.Pos.x + col.size.x/2);
+                            xvalues.Add(col.Pos.x - col.size.x/2);
                         }
                     }
                     else
                     {
                         if((point.y - selfcollider.getcalpos().y) < (correctedy - selfcollider.getcalpos().y))
                         {
-                            yvalues.Add(col.getpos().y + col.getscale().y/2);
-                            yvalues.Add(col.getpos().y - col.getscale().y/2);
+                            yvalues.Add(col.Pos.y + col.size.y/2);
+                            yvalues.Add(col.Pos.y - col.size.y/2);
                         }
                         else
                         {
-                            xvalues.Add(col.getpos().x + col.getscale().x/2);
-                            xvalues.Add(col.getpos().x - col.getscale().x/2);
+                            xvalues.Add(col.Pos.x + col.size.x/2);
+                            xvalues.Add(col.Pos.x - col.size.x/2);
                         }
                     }
                     
@@ -244,12 +280,12 @@ public class MyPhysics : MonoBehaviour
                 if(vel.y > 0)
                 {
 
-                    vel.y = yvalues.Min() - (selfcollider.getpos().y + selfcollider.getscale().y/2);
+                    vel.y = yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2);
 
                 }
                 else
                 {
-                    vel.y = yvalues.Max() - (selfcollider.getpos().y - selfcollider.getscale().y/2); 
+                    vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2); 
                 }
             }
             if(xvalues.Count > 0)
@@ -257,12 +293,12 @@ public class MyPhysics : MonoBehaviour
                 if(vel.x > 0)
                 {
 
-                    vel.x = xvalues.Min() - (selfcollider.getpos().x + selfcollider.getscale().x/2);
+                    vel.x = xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2);
 
                 }
                 else
                 {
-                    vel.x = xvalues.Max() - (selfcollider.getpos().x - selfcollider.getscale().x/2); 
+                    vel.x = xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2); 
                 }
             }
             
