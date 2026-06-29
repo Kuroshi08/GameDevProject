@@ -160,82 +160,83 @@ public class MyPhysics : MonoBehaviour
                 }
             }
             ///////
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// FIX THE XY MOVEMENT
-            /// problems with the cline detection, seems to be problecm in the collider intersectline
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
-            /// 
+
             /// now detect if object should take x or y val () use intesect point, if d1 < d2 get d1 x or y to list, get min of list
-            Vector2 cpoint = selfcollider.getpos() + new Vector2(selfcollider.getscale().x * vel.x / Math.Abs(vel.x),selfcollider.getscale().y * vel.y / Math.Abs(vel.y));
+            Vector2 cpoint = selfcollider.getpos() + new Vector2(selfcollider.getscale().x/2 * vel.x / Math.Abs(vel.x),selfcollider.getscale().y * vel.y / Math.Abs(vel.y)/2) ;
             Vector2[] cline = new Vector2[2] {cpoint,cpoint+vel};
             foreach(MyCollider col in vcolliderr)
             {
                 List<Vector2[]> walls = col.ColliderIntersectLine(cline);
                 if(walls != null)
                 {
-                    Vector2[] rwall = null;
-                    Vector2? rwallp;
-                    float rwallsd = 0;
-                    foreach(Vector2[] wall in walls)
-                    {
-                        Vector2? wp = MyMathstuff.GetIntersection(wall,cline);
-                        if(wp == null)
+                        Vector2[] rwall = null;
+                        Vector2? rwallp;
+                        float rwallsd = 0;
+                        foreach(Vector2[] wall in walls)
+                        {
+                            Vector2? wp = MyMathstuff.GetIntersection(wall,cline) - cpoint;
+                            if(wp == null)
+                            {
+                                break;
+                            }
+
+                            if(rwall == null)
+                            {
+                                rwall = wall;
+                                rwallp = (Vector2)wp;
+                                rwallsd = ((Vector2)wp).sqrMagnitude;
+                            }
+                            else if(((Vector2)wp).sqrMagnitude < rwallsd)
+                            {
+                                rwall = wall;
+                                rwallp = (Vector2)wp;
+                                rwallsd = ((Vector2)wp).sqrMagnitude;
+                            }
+                        }
+                        if(rwall == null)
                         {
                             break;
                         }
-
-                        if(rwall == null)
+                        if(rwall[0].x == rwall[1].x)
                         {
-                            rwall = wall;
-                            rwallp = (Vector2)wp;
-                            rwallsd = ((Vector2)wp).sqrMagnitude;
+                            xvalues.Add(rwall[0].x);
                         }
-                        else if(((Vector2)wp).sqrMagnitude < rwallsd)
+                        if(rwall[0].y == rwall[1].y)
                         {
-                            rwall = wall;
-                            rwallp = (Vector2)wp;
-                            rwallsd = ((Vector2)wp).sqrMagnitude;
+                            yvalues.Add(rwall[0].y);
                         }
-                    }
-                    if(rwall == null)
-                    {
-                        break;
-                    }
-                    if(rwall[0].x == rwall[1].x)
-                    {
-                        xvalues.Add(rwall[0].x);
-                    }
-                    if(rwall[0].y == rwall[1].y)
-                    {
-                        yvalues.Add(rwall[0].y);
-                    }
                 }
                 else
                 {
                     Vector2 point = col.getcalpos();
-                    float correctedy = cpoint.y - ((cpoint.x - point.x) * vel.y/vel.x );
-                    if(Math.Abs(point.y - selfcollider.getcalpos().y) > Math.Abs(correctedy - selfcollider.getcalpos().y))
+                    float correctedy = cpoint.y + ((point.x - cpoint.x) * vel.y/vel.x );
+                    if(vel.y > 0)
                     {
-                        yvalues.Add(col.getpos().y + col.getscale().y/2);
-                        yvalues.Add(col.getpos().y - col.getscale().y/2);
+                        if((point.y - selfcollider.getcalpos().y) > (correctedy - selfcollider.getcalpos().y))
+                        {
+                            yvalues.Add(col.getpos().y + col.getscale().y/2);
+                            yvalues.Add(col.getpos().y - col.getscale().y/2);
+                        }
+                        else
+                        {
+                            xvalues.Add(col.getpos().x + col.getscale().x/2);
+                            xvalues.Add(col.getpos().x - col.getscale().x/2);
+                        }
                     }
                     else
                     {
-                        xvalues.Add(col.getpos().x + col.getscale().x/2);
-                        xvalues.Add(col.getpos().x - col.getscale().x/2);
+                        if((point.y - selfcollider.getcalpos().y) < (correctedy - selfcollider.getcalpos().y))
+                        {
+                            yvalues.Add(col.getpos().y + col.getscale().y/2);
+                            yvalues.Add(col.getpos().y - col.getscale().y/2);
+                        }
+                        else
+                        {
+                            xvalues.Add(col.getpos().x + col.getscale().x/2);
+                            xvalues.Add(col.getpos().x - col.getscale().x/2);
+                        }
                     }
+                    
                 }
 
             }

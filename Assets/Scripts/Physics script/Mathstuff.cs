@@ -88,7 +88,7 @@ public class Mathstuff
         }
         else
         {
-            if(v2.x != 0)
+            if(v2.x == v1.x)
             {
                 return null;
             }

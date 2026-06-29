@@ -106,7 +106,8 @@ public class MyCollider : MonoBehaviour
         List<Vector2[]> sad = new List<Vector2[]>();
         foreach(Vector2[] walls in this.GetWalls())
         {
-            if (MyMathStuff.doIntersect(walls, line))
+            Debug.Log($"{walls[0]-walls[1]},{MyMathStuff.GetIntersection(walls, line) != null}");
+            if (MyMathStuff.GetIntersection(walls, line) != null)
             {
                 sad.Add(walls);
             }
@@ -126,7 +127,14 @@ public class MyCollider : MonoBehaviour
         return false;
     }
 
-    
+    bool PointInSelf(Vector2 point)
+    {
+        if((point.x <= Pos.x + offset.x + (Size.x / 2)) && (point.x >= Pos.x + offset.x - (Size.x / 2)) && (point.y <= Pos.y + offset.y + (Size.y / 2)) && (point.y >= Pos.y + offset.y - (Size.y / 2)))
+        {
+            return true;
+        }
+        return false;
+    }
     void Aligntoparent(Vector2 Size)
     {
         Pos = new Vector2(transform.position.x,transform.position.y);
