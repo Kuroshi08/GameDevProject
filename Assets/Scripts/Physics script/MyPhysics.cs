@@ -19,7 +19,6 @@ public class MyPhysics : MonoBehaviour
     bool grav;
     Vector2 vel;
     bool isGrounded;
-    float Gravity = 9.8f;
     MyCollider vCollider;
     MyCollider eCollider;
     MyCollider selfcollider;

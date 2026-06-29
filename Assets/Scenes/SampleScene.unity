@@ -638,7 +638,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   vel: {x: 0, y: 0}
-  velDecayX: 0
+  velDecayX: 10
   velDecayY: 1
   maxwalkvelX: 10
   speed: 1

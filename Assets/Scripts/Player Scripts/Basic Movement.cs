@@ -9,11 +9,12 @@ public class BasicMovement : MonoBehaviour
 
     public Vector2 vel;
     public float velDecayX = 0;
-    public float velDecayY = 0;
+    public float gravity = 1;
     public float maxwalkvelX = 1;
     public float speed= 0.2f;
     public Vector2 velmod;
-    float pgrav = 9.8f;
+    float maxgrav = 9.8f;
+    bool xinputs = false;
 
     MyPhysics P;
 
@@ -23,7 +24,15 @@ public class BasicMovement : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
-        P = gameObject.AddComponent<MyPhysics>();
+        if(gameObject.GetComponent<MyPhysics>() != null)
+        {
+            P=gameObject.GetComponent<MyPhysics>();
+        }
+        else
+        {
+            P = gameObject.AddComponent<MyPhysics>();
+        }
+        
     }
     void Start()
     {
@@ -51,21 +60,20 @@ public class BasicMovement : MonoBehaviour
     }
     void decaySpeedX()
     {
-        if(Math.Abs(vel.x)> 0.001)
+        if(Math.Abs(vel.x)> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
         {
             vel.x -= vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime;            
         }
-
-        if(Math.Abs(vel.x) < 0.001)
+        else
         {
             vel.x = 0;
         }
     }
     void grav()
     {
-        if(vel.y > -pgrav)
+        if(vel.y > -maxgrav)
         {
-            vel.y -= velDecayY;
+            vel.y -= gravity;
         }
         
     }
@@ -74,10 +82,12 @@ public class BasicMovement : MonoBehaviour
     {
         if(Input.GetKey("d"))
         {
+            xinputs=true;
             MoveRight();
         }
         if(Input.GetKey("a"))
         {
+            xinputs=true;
             MoveLeft();
         }
         if (Input.GetKey("j"))
@@ -85,7 +95,11 @@ public class BasicMovement : MonoBehaviour
             Jump();
         }
         grav();
-        decaySpeedX();
+        if (!xinputs)
+        {
+            decaySpeedX();
+        }
+        xinputs = false;
         P.MoveObject(vel* Time.deltaTime);
     }
     void FixedUpdate()
