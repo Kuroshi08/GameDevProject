@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEditor.ShaderGraph;
 using System.Linq;
 using Unity.VisualScripting;
+using NUnit.Framework.Internal;
 
 
 
@@ -44,14 +45,7 @@ public class MyPhysics : MonoBehaviour
     public void MoveObject(Vector2 vel, string onlyAffectTag = null)
     {
         Vector2 newVel = checkCol(vel);
-        if(vel.y < 0 && newVel.y > vel.y)
-        {
-            isGrounded = true;
-        }
-        else
-        {
-            isGrounded = false;
-        }
+        isGrounded = vel.y < 0 && newVel.y > vel.y;
         if(vel.x != newVel.x)
         {
             xwallc = (int)(vel.x/Math.Abs(vel.x));
@@ -60,6 +54,7 @@ public class MyPhysics : MonoBehaviour
         {
             xwallc = 0;
         }
+
         transform.Translate(newVel);
     }
     Vector2 checkCol(Vector2 vel)
@@ -208,8 +203,7 @@ public class MyPhysics : MonoBehaviour
                 List<Vector2[]> walls = col.ColliderIntersectLine(cline);
                 if(walls != null)
                 {
-                    testbool = true;
-                    Vector2[] rwall = null;
+                    List<Vector2[]> rwall = new List<Vector2[]>();
                     Vector2? rwallp;
                     float rwallsd = 0;
                     foreach(Vector2[] wall in walls)
@@ -220,36 +214,47 @@ public class MyPhysics : MonoBehaviour
                             break;
                         }
 
-                        if(rwall == null)
+                        if(rwall.Count == 0)
                         {
-                            rwall = wall;
+                            rwall = new List<Vector2[]>();
+                            rwall.Add(wall);
                             rwallp = (Vector2)wp;
                             rwallsd = ((Vector2)wp).sqrMagnitude;
                         }
                         else if(((Vector2)wp).sqrMagnitude < rwallsd)
                         {
-                            rwall = wall;
+                            rwall = new List<Vector2[]>();
+                            rwall.Add(wall);
+                            rwallp = (Vector2)wp;
+                            rwallsd = ((Vector2)wp).sqrMagnitude;
+                        }
+                        else if(((Vector2)wp).sqrMagnitude == rwallsd)
+                        {
+                            rwall.Add(wall);
                             rwallp = (Vector2)wp;
                             rwallsd = ((Vector2)wp).sqrMagnitude;
                         }
                     }
-                    if(rwall == null)
+                    if(rwall.Count == 0)
                     {
                         break;
                     }
-                    if(rwall[0].x == rwall[1].x)
+                    foreach(Vector2[] w in rwall)
                     {
-                        
-                        xvalues.Add(rwall[0].x);
+                        if(w[0].x == w[1].x)
+                            {
+                                xvalues.Add(w[0].x);
+                            }
+                            if(w[0].y == w[1].y)
+                            {
+                                yvalues.Add(w[0].y);
+                            }
                     }
-                    if(rwall[0].y == rwall[1].y)
-                    {
-                        yvalues.Add(rwall[0].y);
-                    }
+
                 }
                 else
                 {
-                    
+                    testbool = true;
                     Vector2 point = col.getcalpos();
                     float correctedy = cpoint.y + ((point.x - cpoint.x) * vel.y/vel.x );
                     if(vel.y > 0)
@@ -307,6 +312,10 @@ public class MyPhysics : MonoBehaviour
                 yvalues.Remove(yvalues.Max());
             }
         }
+        if(vel.x != 0 && xvalues.Count == 0)
+        {
+            //Debug.Log(testbool);
+        }
         while(xvalues.Count > 0)
         {
             if(vel.x > 0)
@@ -331,6 +340,10 @@ public class MyPhysics : MonoBehaviour
         }
         return vel;
     }
+    /// <summary>
+    /// BUG
+    /// issue when moving at high speeds x > 20 and y != 0
+    /// </summary>
     void decaySpeedX()
     {
         if(Math.Abs(vel.x)> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
@@ -352,7 +365,18 @@ public class MyPhysics : MonoBehaviour
         {
             vel.y -= gravity * gravityMod;
         }
-        
+        if(vel.y < -maxgrav * gravity)
+        {
+            if((vel.y - (-maxgrav * gravity)) > 0.5)
+            {
+                vel.y += (vel.y - (-maxgrav * gravity)) * 0.4f;
+            }
+            else
+            {
+                vel.y = -maxgrav * gravity;
+            }
+            
+        }
     }
     void FixedUpdate()
     {

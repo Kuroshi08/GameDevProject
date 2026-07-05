@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 
 public class BasicMovement : MonoBehaviour
@@ -14,13 +15,17 @@ public class BasicMovement : MonoBehaviour
     public float speed= 0.2f;
     public float jumpv = 10;
     public float walljumpv = 3;
+    float dashV = 10;
     public Vector2 velmod;
     public bool jumpbool = true;
+    bool dashb = false;
+    bool oguriCap = true;
     bool movement = true;
+    int stopx = 0;
     bool iswallgrab = false;
 
     bool xinputs = false;
-
+    Vector2 moveDir = new Vector2();
     MyPhysics P;
 
 
@@ -73,13 +78,24 @@ public class BasicMovement : MonoBehaviour
             if(P.xwallc != 0 && !P.isGrounded)
             {
                 P.vel.x = P.xwallc * walljumpv * -1;
-                StartCoroutine(StopMove());
+                StartCoroutine(WallJumpStop(P.xwallc));
             }
             P.vel.y = 0;
             P.vel.y += jumpv;
             jumpbool = false;
         }
         
+    }
+    void Dash()
+    {
+        if (dashb)
+        {
+            dashb = false;
+            oguriCap = false;
+            Debug.Log(moveDir);
+            P.vel = moveDir.normalized * dashV;
+            StartCoroutine(DashTimer());
+        }
     }
 
 
@@ -92,16 +108,32 @@ public class BasicMovement : MonoBehaviour
         }
         
     }
-    IEnumerator StopMove()
+    IEnumerator WallJumpStop(int v)
     {
-        movement = false;
+        stopx = v;
         yield return new WaitForSeconds(0.15f);
+        stopx = 0;
+        
+    }
+    IEnumerator DashTimer()
+    {
+        P.DoXdecay = false;
+        movement = false;
+        yield return new WaitForSeconds(0.50f);
         movement = true;
+        P.DoXdecay = true;
+        yield return new WaitForSeconds(0.2f);
+        oguriCap = true;
         
     }
     // Update is called once per frame
     void Update()
     {
+        moveDir = new Vector2();
+        if (P.isGrounded && oguriCap)
+        {
+            dashb = true;
+        }
         if (P.isGrounded || P.xwallc != 0)
         {
             jumpbool = true;
@@ -128,23 +160,47 @@ public class BasicMovement : MonoBehaviour
         }
         if (movement)
         {
-            if(Input.GetKey("d"))
+            if(Input.GetKey("d") && stopx != 1)
             {
                 xinputs=true;
                 MoveRight();
             }
-            if(Input.GetKey("a"))
+            if(Input.GetKey("a") && stopx != -1)
             {
                 xinputs=true;
                 MoveLeft();
             }
+            if(Input.GetKey("d"))
+            {
+                moveDir.x = 1;
+            }
+            if(Input.GetKey("a"))
+            {
+                moveDir.x = -1;
+            }
+            if(Input.GetKey("w"))
+            {
+                moveDir.y = 1;
+            }
+            if(Input.GetKey("s"))
+            {
+                moveDir.y = -1;
+            }
+            if (Input.GetKey("j"))
+            {
+                Jump();
+            }
+            if (Input.GetKey("k"))
+            {
+                Dash();
+            }
+            P.DoXdecay = !xinputs;
+            
         }
-        if (Input.GetKey("j"))
-        {
-            Jump();
-        }
-        P.DoXdecay = !xinputs;
+        
+        
         xinputs = false;
+        
     }
     void FixedUpdate()
     {

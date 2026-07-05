@@ -94,10 +94,10 @@ public class Mathstuff
                 ret.y = (ret.x * a1) + c1;
             }
         }
-        bool p = Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 & (ret != line1[0] || ret != line1[1]) ;
+        bool p = Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 && (ret != line1[0] && ret != line1[1]) ;
 
-        //Debug.Log($"{p},{ret},{line2[0]},{line2[1]}");
-        if(Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 & (ret != line1[0] || ret != line1[1]))
+        //Debug.Log($"{p},{ret},{line1[0]},{line1[1]}");
+        if(Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 && (ret != line1[0] && ret != line1[1]))
         {
             return null;
         }
