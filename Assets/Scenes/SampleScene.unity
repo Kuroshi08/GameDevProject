@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 366118321}
   - component: {fileID: 366118322}
   m_Layer: 0
-  m_Name: Square (2)
+  m_Name: test
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -146,8 +146,8 @@ Transform:
   m_GameObject: {fileID: 366118318}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 1, z: 1}
+  m_LocalPosition: {x: -0.08, y: 0, z: 0}
+  m_LocalScale: {x: 2, y: 0.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -564,7 +564,7 @@ Transform:
   m_GameObject: {fileID: 810537236}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 17, y: 0, z: 0}
+  m_LocalPosition: {x: 10, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -720,7 +720,7 @@ Transform:
   m_GameObject: {fileID: 1249003309}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.46, y: -1.95, z: 0}
+  m_LocalPosition: {x: 0.2, y: 1.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -738,12 +738,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0db9a707c46ff47bbb08c55d1029ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  vel: {x: 0, y: 0}
-  velDecayX: 100
-  gravity: 1
   maxwalkvelX: 10
   speed: 1
+  jumpv: 20
   velmod: {x: 0, y: 0}
+  jumpbool: 1
 --- !u!114 &1249003315
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -783,7 +782,7 @@ Transform:
   m_GameObject: {fileID: 1322662086}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -17, y: 0, z: 0}
+  m_LocalPosition: {x: -10, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 10, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

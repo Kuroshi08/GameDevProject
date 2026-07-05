@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.ShaderGraph;
 using System.Linq;
+using Unity.VisualScripting;
 
 
 
@@ -13,15 +14,20 @@ using System.Linq;
 /// </summary>
 public class MyPhysics : MonoBehaviour
 {
+    public Vector2 vel;
+    public float velDecayX = 100;
     Mathstuff MyMathstuff = new Mathstuff();
     float mass;
+    public float gravity = 1;
+    public float gravityMod = 1;
     bool[] lockXY = new bool[2];
-    bool grav;
-    Vector2 vel;
-    bool isGrounded;
+    float maxgrav = 9.8f;
+    public bool isGrounded;
+    public int xwallc = 0;
     MyCollider vCollider;
     MyCollider eCollider;
     MyCollider selfcollider;
+    public bool DoXdecay;
 
 
     //make this also a comp, use My colliderdirectly
@@ -37,8 +43,31 @@ public class MyPhysics : MonoBehaviour
     }
     public void MoveObject(Vector2 vel, string onlyAffectTag = null)
     {
-
-        List<MyCollider> vcolliderr = new List<MyCollider>();
+        Vector2 newVel = checkCol(vel);
+        if(vel.y < 0 && newVel.y > vel.y)
+        {
+            isGrounded = true;
+        }
+        else
+        {
+            isGrounded = false;
+        }
+        if(vel.x != newVel.x)
+        {
+            xwallc = (int)(vel.x/Math.Abs(vel.x));
+        }
+        else 
+        {
+            xwallc = 0;
+        }
+        transform.Translate(newVel);
+    }
+    Vector2 checkCol(Vector2 vel)
+    {
+        bool testbool = false;
+        List<float> xvalues = new List<float>();
+        List<float> yvalues = new List<float>();
+        
         ///////////////write point based( gen points based on positive x * y + vector speed, left right based on positive x)
         /// 
         /// 
@@ -49,11 +78,11 @@ public class MyPhysics : MonoBehaviour
         if(vel.y == 0 && vel.x != 0)
         {
             vCollider.AutoPoints();
-            List<float> xvalues = new List<float>();
+            xvalues = new List<float>();
             float xpos = vel.x/Math.Abs(vel.x);
             vCollider.offset = (new Vector2(vel.x/2 + (selfcollider.size.x/2 * xpos) ,0));
             vCollider.size = (new Vector2(Math.Abs(vel.x)/2,selfcollider.size.y));
-            vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
                 
@@ -77,31 +106,19 @@ public class MyPhysics : MonoBehaviour
                     }
                     
                 }
-                if(xvalues.Count > 0)
-                {
-                    if(vel.x > 0)
-                    {
-                        
-                        vel.x = xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2);
-
-                    }
-                    else
-                    {
-                    vel.x = xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2); 
-                    }
-                }
             }
             
         }
         /// if only y
         if(vel.y != 0 && vel.x == 0)
         {
+            
             vCollider.AutoPoints();
-            List<float> yvalues = new List<float>();
+            yvalues = new List<float>();
             float ypos = vel.y/Math.Abs(vel.y);
             vCollider.offset = (new Vector2(0 ,vel.y/2 + (selfcollider.size.y/2 * ypos)));
             vCollider.size = (new Vector2(selfcollider.size.x,Math.Abs(vel.y)));
-            vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
 
@@ -125,20 +142,6 @@ public class MyPhysics : MonoBehaviour
                     
                     
                 }
-                if(yvalues.Count > 0)
-                {
-                    if(vel.y > 0)
-                    {
-                        
-                        vel.y = yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2);
-
-                    }
-                    else
-                    {
-                    vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2); 
-                    }
-                }
-                
             }
             
         } 
@@ -149,8 +152,9 @@ public class MyPhysics : MonoBehaviour
         
         if(vel.y != 0 && vel.x != 0)
         {
-            List<float> xvalues = new List<float>();
-            List<float> yvalues = new List<float>();
+            
+            xvalues = new List<float>();
+            yvalues = new List<float>();
             eCollider.offset = vel;
             eCollider.size = (selfcollider.size);
             Vector2[] spoints = new Vector2[2];
@@ -185,7 +189,7 @@ public class MyPhysics : MonoBehaviour
             vCollider.ChangePoints(rpoints);
 
 
-            vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> vcolliderr = vCollider.getallcollisions();
             List<MyCollider> ecolliderr = eCollider.getallcollisions(); 
             foreach(MyCollider col in ecolliderr)
             {
@@ -204,50 +208,53 @@ public class MyPhysics : MonoBehaviour
                 List<Vector2[]> walls = col.ColliderIntersectLine(cline);
                 if(walls != null)
                 {
-                        Vector2[] rwall = null;
-                        Vector2? rwallp;
-                        float rwallsd = 0;
-                        foreach(Vector2[] wall in walls)
-                        {
-                            Vector2? wp = MyMathstuff.GetIntersection(wall,cline) - cpoint;
-                            if(wp == null)
-                            {
-                                break;
-                            }
-
-                            if(rwall == null)
-                            {
-                                rwall = wall;
-                                rwallp = (Vector2)wp;
-                                rwallsd = ((Vector2)wp).sqrMagnitude;
-                            }
-                            else if(((Vector2)wp).sqrMagnitude < rwallsd)
-                            {
-                                rwall = wall;
-                                rwallp = (Vector2)wp;
-                                rwallsd = ((Vector2)wp).sqrMagnitude;
-                            }
-                        }
-                        if(rwall == null)
+                    testbool = true;
+                    Vector2[] rwall = null;
+                    Vector2? rwallp;
+                    float rwallsd = 0;
+                    foreach(Vector2[] wall in walls)
+                    {
+                        Vector2? wp = MyMathstuff.GetIntersection(wall,cline) - cpoint;
+                        if(wp == null)
                         {
                             break;
                         }
-                        if(rwall[0].x == rwall[1].x)
+
+                        if(rwall == null)
                         {
-                            xvalues.Add(rwall[0].x);
+                            rwall = wall;
+                            rwallp = (Vector2)wp;
+                            rwallsd = ((Vector2)wp).sqrMagnitude;
                         }
-                        if(rwall[0].y == rwall[1].y)
+                        else if(((Vector2)wp).sqrMagnitude < rwallsd)
                         {
-                            yvalues.Add(rwall[0].y);
+                            rwall = wall;
+                            rwallp = (Vector2)wp;
+                            rwallsd = ((Vector2)wp).sqrMagnitude;
                         }
+                    }
+                    if(rwall == null)
+                    {
+                        break;
+                    }
+                    if(rwall[0].x == rwall[1].x)
+                    {
+                        
+                        xvalues.Add(rwall[0].x);
+                    }
+                    if(rwall[0].y == rwall[1].y)
+                    {
+                        yvalues.Add(rwall[0].y);
+                    }
                 }
                 else
                 {
+                    
                     Vector2 point = col.getcalpos();
                     float correctedy = cpoint.y + ((point.x - cpoint.x) * vel.y/vel.x );
                     if(vel.y > 0)
                     {
-                        if((point.y - selfcollider.getcalpos().y) > (correctedy - selfcollider.getcalpos().y))
+                        if(point.y >= correctedy)
                         {
                             yvalues.Add(col.Pos.y + col.size.y/2);
                             yvalues.Add(col.Pos.y - col.size.y/2);
@@ -260,7 +267,7 @@ public class MyPhysics : MonoBehaviour
                     }
                     else
                     {
-                        if((point.y - selfcollider.getcalpos().y) < (correctedy - selfcollider.getcalpos().y))
+                        if(point.y <= correctedy)
                         {
                             yvalues.Add(col.Pos.y + col.size.y/2);
                             yvalues.Add(col.Pos.y - col.size.y/2);
@@ -275,39 +282,88 @@ public class MyPhysics : MonoBehaviour
                 }
 
             }
-            if(yvalues.Count > 0)
-            {
-                if(vel.y > 0)
-                {
-
-                    vel.y = yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2);
-
-                }
-                else
-                {
-                    vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2); 
-                }
-            }
-            if(xvalues.Count > 0)
-            {
-                if(vel.x > 0)
-                {
-
-                    vel.x = xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2);
-
-                }
-                else
-                {
-                    vel.x = xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2); 
-                }
-            }
+            
             
         }
-        transform.Translate(vel);
+        while(yvalues.Count > 0)
+        {
+            if(vel.y > 0)
+            {
+                if( yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2) >= 0 && yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2) <= vel.y)
+                {
+                    vel.y = yvalues.Min() - (selfcollider.Pos.y + selfcollider.size.y/2);
+                    break;
+                }
+                yvalues.Remove(yvalues.Min());
+
+            }
+            else
+            {
+                if( yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) <= 0 &&  yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) >= vel.y)
+                {
+                    vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2);
+                    break;
+                }
+                yvalues.Remove(yvalues.Max());
+            }
+        }
+        while(xvalues.Count > 0)
+        {
+            if(vel.x > 0)
+            {
+                if( xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2) >= 0 && xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2) <= vel.x)
+                {
+                    vel.x = xvalues.Min() - (selfcollider.Pos.x + selfcollider.size.x/2);
+                    break;
+                }
+                xvalues.Remove(xvalues.Min());
+
+            }
+            else
+            {
+                if( xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2) <= 0 && xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2) >= vel.x)
+                {
+                    vel.x = xvalues.Max() - (selfcollider.Pos.x - selfcollider.size.x/2);
+                    break;
+                }
+                xvalues.Remove(xvalues.Max());
+            }
+        }
+        return vel;
     }
-    bool IsGround(GameObject o)
+    void decaySpeedX()
     {
-        BoxCollider2D colliderground = o.AddComponent<BoxCollider2D>();
-        return false;
+        if(Math.Abs(vel.x)> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
+        {
+            vel.x -= vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime;            
+        }
+        else
+        {
+            vel.x = 0;
+        }
+    }
+    void addvel(Vector2 vel)
+    {
+        this.vel = vel + this.vel;
+    }
+    void grav()
+    {
+        if(vel.y > -maxgrav * gravityMod)
+        {
+            vel.y -= gravity * gravityMod;
+        }
+        
+    }
+    void FixedUpdate()
+    {
+        grav();
+        if (DoXdecay)
+        {
+            decaySpeedX();
+        }
+    }
+    void Update()
+    {
+        MoveObject(vel * Time.deltaTime);
     }
 }

@@ -246,4 +246,3 @@ public class MyCollider : MonoBehaviour
         Aligntoparent();
     }
 }
-

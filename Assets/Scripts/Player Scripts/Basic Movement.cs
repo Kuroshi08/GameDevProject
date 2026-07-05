@@ -2,18 +2,23 @@ using System;
 using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting;
+using System.Linq;
 
 
 public class BasicMovement : MonoBehaviour
 {
 
-    public Vector2 vel;
-    public float velDecayX = 0;
-    public float gravity = 1;
+
+
     public float maxwalkvelX = 1;
     public float speed= 0.2f;
+    public float jumpv = 10;
+    public float walljumpv = 3;
     public Vector2 velmod;
-    float maxgrav = 9.8f;
+    public bool jumpbool = true;
+    bool movement = true;
+    bool iswallgrab = false;
+
     bool xinputs = false;
 
     MyPhysics P;
@@ -37,70 +42,109 @@ public class BasicMovement : MonoBehaviour
     void Start()
     {
     }
-
-    void MoveLeft()
-    {
-        vel.x -= speed;
-        if(Math.Abs(vel.x) > maxwalkvelX)
-            {
-                vel.x = vel.x/Math.Abs(vel.x) * maxwalkvelX;
-            }
-    }
     void MoveRight()
     {
-        vel.x += speed;
-        if(Math.Abs(vel.x) > maxwalkvelX)
-            {
-                vel.x = vel.x/Math.Abs(vel.x) * maxwalkvelX;
-            }
-    }
-    void Jump()
-    {
-        vel.y += speed;
-    }
-    void decaySpeedX()
-    {
-        if(Math.Abs(vel.x)> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
+        if(maxwalkvelX - P.vel.x > speed)
         {
-            vel.x -= vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime;            
+            P.vel.x += speed;
         }
         else
         {
-            vel.x = 0;
+            P.vel.x = maxwalkvelX;
+        }
+        
+    }
+    void MoveLeft()
+    {
+        if(-maxwalkvelX - P.vel.x < -speed)
+        {
+            P.vel.x -= speed;
+        }
+        else
+        {
+            P.vel.x = -maxwalkvelX;
         }
     }
-    void grav()
+
+    void Jump()
     {
-        if(vel.y > -maxgrav)
+        if (jumpbool)
         {
-            vel.y -= gravity;
+            if(P.xwallc != 0 && !P.isGrounded)
+            {
+                P.vel.x = P.xwallc * walljumpv * -1;
+                StartCoroutine(StopMove());
+            }
+            P.vel.y = 0;
+            P.vel.y += jumpv;
+            jumpbool = false;
         }
+        
+    }
+
+
+    IEnumerator StartGTime()
+    {
+        yield return new WaitForSeconds(0.05f);
+        if (!(P.isGrounded || P.xwallc != 0))
+        {
+            jumpbool = false;
+        }
+        
+    }
+    IEnumerator StopMove()
+    {
+        movement = false;
+        yield return new WaitForSeconds(0.15f);
+        movement = true;
         
     }
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKey("d"))
+        if (P.isGrounded || P.xwallc != 0)
         {
-            xinputs=true;
-            MoveRight();
+            jumpbool = true;
         }
-        if(Input.GetKey("a"))
+        else
         {
-            xinputs=true;
-            MoveLeft();
+            StartCoroutine(StartGTime());
+        }
+        if(P.xwallc != 0)
+        {
+            if (!iswallgrab)
+            {
+                P.gravityMod -= 0.5f;
+            }
+            iswallgrab = true;
+        }
+        else
+        {
+            if (iswallgrab)
+            {
+                P.gravityMod += 0.5f;
+            }
+            iswallgrab = false;
+        }
+        if (movement)
+        {
+            if(Input.GetKey("d"))
+            {
+                xinputs=true;
+                MoveRight();
+            }
+            if(Input.GetKey("a"))
+            {
+                xinputs=true;
+                MoveLeft();
+            }
         }
         if (Input.GetKey("j"))
         {
             Jump();
         }
-        grav();
-        if (!xinputs)
-        {
-            decaySpeedX();
-        }
+        P.DoXdecay = !xinputs;
         xinputs = false;
-        P.MoveObject(vel* Time.deltaTime);
     }
     void FixedUpdate()
     {

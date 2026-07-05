@@ -5,7 +5,6 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine.Rendering;
-using Unity.XR.OpenVR;
 
 public class Mathstuff
 {
@@ -61,46 +60,50 @@ public class Mathstuff
     }
     public Vector2? GetIntersection(Vector2[] line1, Vector2[] line2)
     {
+        Vector2 ret = new Vector2();
         Vector2 v1 = line1[0] - line1[1];
         Vector2 v2 = line2[0] - line2[1];
-
-        Vector2 ret = new Vector2();
-        if(v1.x != 0)
+        float a1 = v1.y/v1.x;
+        float a2 = v2.y/v2.x;
+        float c1 = line1[0].y - (a1*line1[0].x);
+        float c2 = line2[0].y - (a2*line2[0].x);
+        float d = a1 - a2;
+        if(Math.Abs(a1) == float.PositiveInfinity && Math.Abs(a2) == float.PositiveInfinity)
         {
-            float a1 = v1.y/v1.x;
-            float c1 = line1[0].y - (line1[0].x * a1);
-            if(v2.x != 0)
-            {
-                float a2 = v2.y/v2.x;
-                float c2 = line2[0].y - (line2[0].x * a2);
-                if(a1 == a2)
-                {
-                    return null;
-                }
-                ret.x = (c1 - c2) / (a2 - a1);
-                ret.y = c1 + (a1 * ret.x);
-            }
-            else
-            {
-                ret.x = line2[0].x;
-                ret.y = c1 + (a1 * ret.x);
-            }
+            return null;
         }
-        else
+        if(v1[0] != 0 && v2[0] != 0)
         {
-            if(v2.x == v1.x)
+            if(d == 0)
             {
                 return null;
             }
-            else
+            ret.x = (c2-c1) / d;
+            ret.y = a1 * ret.x  + c1;
+        }
+        else
+        {
+            if(Math.Abs(a1 )== float.PositiveInfinity)
             {
-                float a2 = v2.y/v2.x;
-                float c2 = line2[0].y - (line2[0].x * a2);
                 ret.x = line1[0].x;
-                ret.y = c2 + (a2 * ret.x);
+                ret.y = (ret.x * a2) + c2;
+            }
+            if(Math.Abs(a2 )== float.PositiveInfinity)
+            {
+                ret.x = line2[0].x;
+                ret.y = (ret.x * a1) + c1;
             }
         }
+        bool p = Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 & (ret != line1[0] || ret != line1[1]) ;
+
+        //Debug.Log($"{p},{ret},{line2[0]},{line2[1]}");
+        if(Vector2.Dot((ret - line1[0]).normalized,(line1[1] - ret).normalized) < 0.99 & (ret != line1[0] || ret != line1[1]))
+        {
+            return null;
+        }
         return ret;
+
+        
 
     }
 }
