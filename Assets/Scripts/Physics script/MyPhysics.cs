@@ -84,18 +84,11 @@ public class MyPhysics : MonoBehaviour
 
                     if(vel.x > 0)
                     {
-                        if(col.Pos.x - col.size.x/2 >= (selfcollider.Pos.x + selfcollider.size.x / 2))
-                        {
-                            xvalues.Add(col.Pos.x - col.size.x/2);
-                        }
-                        
+                        xvalues.Add(col.Pos.x - col.size.x/2);          
                     }
                     if(vel.x < 0)
                     {
-                        if(col.Pos.x + col.size.x/2 <= (selfcollider.Pos.x - selfcollider.size.x / 2))
-                        {
-                            xvalues.Add(col.Pos.x + col.size.x/2);
-                        }
+                        xvalues.Add(col.Pos.x + col.size.x/2);
                     }
                     
                 }
@@ -119,18 +112,13 @@ public class MyPhysics : MonoBehaviour
                 {
                     if(vel.y > 0)
                     {
-                        if(col.Pos.y - col.size.y/2 >= (selfcollider.Pos.y + selfcollider.size.y / 2))
-                        {
-                            yvalues.Add(col.Pos.y - col.size.y/2);
-                        }
-                        
+                        yvalues.Add(col.Pos.y + col.size.y/2);
+                        yvalues.Add(col.Pos.y - col.size.y/2);                     
                     }
                     if(vel.y < 0)
-                    {
-                        if(col.Pos.y + col.size.y/2 <= (selfcollider.Pos.y - selfcollider.size.y / 2))
-                        {
-                            yvalues.Add(col.Pos.y + col.size.y/2);
-                        }
+                    {   
+                        yvalues.Add(col.Pos.y + col.size.y/2);
+                        yvalues.Add(col.Pos.y - col.size.y/2);
                     }
                     
                     
@@ -301,6 +289,10 @@ public class MyPhysics : MonoBehaviour
             
             
         }
+        if(vel.y != 0 && yvalues.Count != 0)
+        {
+            Debug.Log(testbool);
+        }
         while(yvalues.Count > 0)
         {
             if(vel.y > 0)
@@ -315,6 +307,7 @@ public class MyPhysics : MonoBehaviour
             }
             else
             {
+                Debug.Log($"{testbool},{yvalues.Max()}");
                 if( yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) <= 0 &&  yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) >= vel.y)
                 {
                     vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2);
@@ -323,10 +316,7 @@ public class MyPhysics : MonoBehaviour
                 yvalues.Remove(yvalues.Max());
             }
         }
-        if(vel.x != 0 && xvalues.Count != 0)
-        {
-            Debug.Log(testbool);
-        }
+
         while(xvalues.Count > 0)
         {
             if(vel.x > 0)
