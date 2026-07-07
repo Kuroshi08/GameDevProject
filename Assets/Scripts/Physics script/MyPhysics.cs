@@ -7,12 +7,10 @@ using UnityEditor.ShaderGraph;
 using System.Linq;
 using Unity.VisualScripting;
 using NUnit.Framework.Internal;
+using System.Runtime.CompilerServices;
 
 
 
-/// <summary>
-/// make into monobehavior
-/// </summary>
 public class MyPhysics : MonoBehaviour
 {
     public Vector2 vel;
@@ -261,26 +259,39 @@ public class MyPhysics : MonoBehaviour
                     {
                         if(point.y >= correctedy)
                         {
-                            yvalues.Add(col.Pos.y + col.size.y/2);
-                            yvalues.Add(col.Pos.y - col.size.y/2);
+                            if((col.Pos.x + col.size.x/2) > selfcollider.Pos.x - selfcollider.size.x/2)
+                            {
+                                yvalues.Add(col.Pos.y + col.size.y/2);
+                                yvalues.Add(col.Pos.y - col.size.y/2);
+                            }
                         }
                         else
                         {
-                            xvalues.Add(col.Pos.x + col.size.x/2);
-                            xvalues.Add(col.Pos.x - col.size.x/2);
+                            if((col.Pos.y + col.size.y/2) > selfcollider.Pos.y - selfcollider.size.y/2)
+                            {
+                                xvalues.Add(col.Pos.x + col.size.x/2);
+                                xvalues.Add(col.Pos.x - col.size.x/2);
+                            }
+                            
                         }
                     }
                     else
                     {
                         if(point.y <= correctedy)
                         {
-                            yvalues.Add(col.Pos.y + col.size.y/2);
-                            yvalues.Add(col.Pos.y - col.size.y/2);
+                            if((col.Pos.x - col.size.x/2) < selfcollider.Pos.x + selfcollider.size.x/2)
+                            {
+                                yvalues.Add(col.Pos.y + col.size.y/2);
+                                yvalues.Add(col.Pos.y - col.size.y/2);
+                            }
                         }
                         else
                         {
-                            xvalues.Add(col.Pos.x + col.size.x/2);
-                            xvalues.Add(col.Pos.x - col.size.x/2);
+                            if((col.Pos.y - col.size.y/2) < selfcollider.Pos.y + selfcollider.size.y/2)
+                            {
+                                xvalues.Add(col.Pos.x + col.size.x/2);
+                                xvalues.Add(col.Pos.x - col.size.x/2);
+                            }
                         }
                     }
                     
@@ -312,9 +323,9 @@ public class MyPhysics : MonoBehaviour
                 yvalues.Remove(yvalues.Max());
             }
         }
-        if(vel.x != 0 && xvalues.Count == 0)
+        if(vel.x != 0 && xvalues.Count != 0)
         {
-            //Debug.Log(testbool);
+            Debug.Log(testbool);
         }
         while(xvalues.Count > 0)
         {

@@ -184,7 +184,7 @@ public class BasicMovement : MonoBehaviour
             }
             if(Input.GetKey("s"))
             {
-                moveDir.y = -1;
+                moveDir.y =  -1;
             }
             if (Input.GetKey("j"))
             {
