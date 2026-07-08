@@ -3,8 +3,6 @@ using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting;
 using System.Linq;
-using UnityEngine.EventSystems;
-
 
 public class BasicMovement : MonoBehaviour
 {
@@ -15,9 +13,10 @@ public class BasicMovement : MonoBehaviour
     public float speed= 0.2f;
     public float jumpv = 10;
     public float walljumpv = 3;
-    float dashV = 10;
+    public float dashV = 20;
     public Vector2 velmod;
     public bool jumpbool = true;
+    Vector2 LastDir = new Vector2(1,0);
     bool dashb = false;
     bool oguriCap = true;
     bool movement = true;
@@ -48,26 +47,32 @@ public class BasicMovement : MonoBehaviour
     {
     }
     void MoveRight()
-    {
-        if(maxwalkvelX - P.vel.x > speed)
+    {   if(P.vel.x < maxwalkvelX)
         {
-            P.vel.x += speed;
+            if(maxwalkvelX - P.vel.x > speed)
+            {
+                P.vel.x += speed;
+            }
+            else
+            {
+                P.vel.x += maxwalkvelX - P.vel.x;
+            } 
         }
-        else
-        {
-            P.vel.x = maxwalkvelX;
-        }
+
         
     }
     void MoveLeft()
     {
-        if(-maxwalkvelX - P.vel.x < -speed)
+        if(P.vel.x > -maxwalkvelX)
         {
-            P.vel.x -= speed;
-        }
-        else
-        {
-            P.vel.x = -maxwalkvelX;
+            if(-maxwalkvelX - P.vel.x < -speed)
+            {
+                P.vel.x -= speed;
+            }
+            else
+            {
+                P.vel.x += -maxwalkvelX - P.vel.x;
+            }
         }
     }
 
@@ -86,17 +91,7 @@ public class BasicMovement : MonoBehaviour
         }
         
     }
-    void Dash()
-    {
-        if (dashb)
-        {
-            dashb = false;
-            oguriCap = false;
-            Debug.Log(moveDir);
-            P.vel = moveDir.normalized * dashV;
-            StartCoroutine(DashTimer());
-        }
-    }
+
 
 
     IEnumerator StartGTime()
@@ -115,21 +110,45 @@ public class BasicMovement : MonoBehaviour
         stopx = 0;
         
     }
-    IEnumerator DashTimer()
+    IEnumerator Dash()
     {
-        P.DoXdecay = false;
+        Vector2 dir = new Vector2();
+        dashb = false;
+        oguriCap = false;
         movement = false;
-        yield return new WaitForSeconds(0.50f);
+        P.DoGrav = false;
+        P.vel = new Vector2();
+        for(int i = 0; i < 5; i++)
+        {
+            if(moveDir != new Vector2())
+            {
+                dir = moveDir;
+            }
+            yield return new WaitForSeconds(0.02f);
+        }
+        if(dir == new Vector2())
+        {
+            dir = LastDir;
+        }
+        P.vel = dir.normalized * dashV;
+        P.DoXdecay += 1;
+        yield return new WaitForSeconds(0.20f);
+        P.DoGrav = true;
         movement = true;
-        P.DoXdecay = true;
+        P.DoXdecay -= 1;
         yield return new WaitForSeconds(0.2f);
         oguriCap = true;
         
+        
+    }
+    IEnumerator WaitForTime(float s)
+    {
+        yield return new WaitForSeconds(s);
     }
     // Update is called once per frame
     void Update()
     {
-        moveDir = new Vector2();
+
         if (P.isGrounded && oguriCap)
         {
             dashb = true;
@@ -160,6 +179,11 @@ public class BasicMovement : MonoBehaviour
         }
         if (movement)
         {
+            if (xinputs)
+            {
+                xinputs = false;
+                P.DoXdecay -= 1;
+            }
             if(Input.GetKey("d") && stopx != 1)
             {
                 xinputs=true;
@@ -190,16 +214,29 @@ public class BasicMovement : MonoBehaviour
             {
                 Jump();
             }
+            if(moveDir == new Vector2())
+            {
+                moveDir.x = LastDir.x;
+            }
+            else
+            {
+                LastDir = moveDir;
+            }
+            
             if (Input.GetKey("k"))
             {
-                Dash();
+                if (dashb)
+                {
+                    StartCoroutine(Dash());
+                }
+                
             }
-            P.DoXdecay = !xinputs;
-            
+            if (xinputs)
+            {
+                P.DoXdecay += 1;
+            }
+            moveDir = new Vector2();
         }
-        
-        
-        xinputs = false;
         
     }
     void FixedUpdate()

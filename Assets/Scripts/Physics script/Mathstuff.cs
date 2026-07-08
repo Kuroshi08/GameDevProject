@@ -106,4 +106,10 @@ public class Mathstuff
         
 
     }
+    public double RoundToSF(float val, int sf)
+    {
+        double scale = Math.Log10(Math.Abs(val));
+        double num = val / (Math.Pow(10,scale));
+        return (Math.Round(num,sf - 1)) * (Math.Pow(10,scale));
+    }
 }

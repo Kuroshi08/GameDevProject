@@ -146,8 +146,8 @@ Transform:
   m_GameObject: {fileID: 366118318}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 2, y: 6, z: 1}
+  m_LocalPosition: {x: 0.67, y: -2.36, z: 0}
+  m_LocalScale: {x: 2, y: 0.7986, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -649,6 +649,7 @@ GameObject:
   - component: {fileID: 1249003312}
   - component: {fileID: 1249003314}
   - component: {fileID: 1249003315}
+  - component: {fileID: 1249003316}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -720,7 +721,7 @@ Transform:
   m_GameObject: {fileID: 1249003309}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5, y: 2.5, z: 0}
+  m_LocalPosition: {x: 4.1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -738,10 +739,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe0db9a707c46ff47bbb08c55d1029ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxwalkvelX: 20
+  maxwalkvelX: 10
   speed: 1
   jumpv: 15
   walljumpv: 15
+  dashV: 20
   velmod: {x: 0, y: 0}
   jumpbool: 1
 --- !u!114 &1249003315
@@ -756,6 +758,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2dca4cae798d8c4b980d5acbb235d2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &1249003316
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1249003309}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19f142b3fc1a11f458745ec09cf2fbaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Camera: {fileID: 519420028}
 --- !u!1 &1322662086
 GameObject:
   m_ObjectHideFlags: 0

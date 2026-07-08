@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using UnityEditor.ShaderGraph;
 using System.Linq;
 using Unity.VisualScripting;
-using NUnit.Framework.Internal;
-using System.Runtime.CompilerServices;
 
 
 
@@ -17,16 +15,19 @@ public class MyPhysics : MonoBehaviour
     public float velDecayX = 100;
     Mathstuff MyMathstuff = new Mathstuff();
     float mass;
+    float maxGSpeed = 15;
+    float maxASpeed = 25;
     public float gravity = 1;
     public float gravityMod = 1;
     bool[] lockXY = new bool[2];
+    public bool DoGrav = true;
     float maxgrav = 9.8f;
     public bool isGrounded;
     public int xwallc = 0;
     MyCollider vCollider;
     MyCollider eCollider;
     MyCollider selfcollider;
-    public bool DoXdecay;
+    public int DoXdecay;
 
 
     //make this also a comp, use My colliderdirectly
@@ -52,12 +53,11 @@ public class MyPhysics : MonoBehaviour
         {
             xwallc = 0;
         }
-
+        
         transform.Translate(newVel);
     }
     Vector2 checkCol(Vector2 vel)
     {
-        bool testbool = false;
         List<float> xvalues = new List<float>();
         List<float> yvalues = new List<float>();
         
@@ -70,11 +70,26 @@ public class MyPhysics : MonoBehaviour
 
         if(vel.y == 0 && vel.x != 0)
         {
-            vCollider.AutoPoints();
             xvalues = new List<float>();
             float xpos = vel.x/Math.Abs(vel.x);
-            vCollider.offset = (new Vector2(vel.x/2 + (selfcollider.size.x/2 * xpos) ,0));
-            vCollider.size = (new Vector2(Math.Abs(vel.x)/2,selfcollider.size.y));
+            Vector2[] points = new Vector2[4];
+            Vector2 cSize = selfcollider.size;
+            Vector2 cPos = selfcollider.Pos;
+            if(xpos > 0)
+            {
+                points[0] = cPos + (cSize/2) + vel;
+                points[1] = cPos + (cSize/2);
+                points[2] = cPos + (cSize/2) + new Vector2(vel.x,-cSize.y);
+                points[3] = cPos + (cSize/2) + new Vector2(0,-cSize.y);
+            }
+            else
+            {
+                points[0] = cPos - (cSize/2) + new Vector2(0,cSize.y);
+                points[1] = cPos - (cSize/2) + new Vector2(vel.x,cSize.y);
+                points[2] = cPos - (cSize/2);
+                points[3] = cPos - (cSize/2) + new Vector2(vel.x,0);
+            }
+            vCollider.ChangePoints(points);
             List<MyCollider> vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
@@ -98,12 +113,26 @@ public class MyPhysics : MonoBehaviour
         /// if only y
         if(vel.y != 0 && vel.x == 0)
         {
-            
-            vCollider.AutoPoints();
             yvalues = new List<float>();
             float ypos = vel.y/Math.Abs(vel.y);
-            vCollider.offset = (new Vector2(0 ,vel.y/2 + (selfcollider.size.y/2 * ypos)));
-            vCollider.size = (new Vector2(selfcollider.size.x,Math.Abs(vel.y)));
+            Vector2[] points = new Vector2[4];
+            Vector2 cSize = selfcollider.size;
+            Vector2 cPos = selfcollider.Pos;
+            if(ypos > 0)
+            {
+                points[0] = cPos + (cSize/2) + vel;
+                points[1] = cPos + (cSize/2) + new Vector2(-cSize.x/2, vel.y);
+                points[2] = cPos + (cSize/2);
+                points[3] = cPos + (cSize/2) + new Vector2(-cSize.x/2,0);
+            }
+            else
+            {
+                points[0] = cPos - (cSize/2) + new Vector2(cSize.x,0);
+                points[1] = cPos - (cSize/2);
+                points[2] = cPos - (cSize/2) + new Vector2(cSize.x,vel.y);
+                points[3] = cPos - (cSize/2) + new Vector2(0,vel.y);
+            }
+            vCollider.ChangePoints(points);
             List<MyCollider> vcolliderr = vCollider.getallcollisions();
             if(vcolliderr.Count != 0)
             {
@@ -240,7 +269,6 @@ public class MyPhysics : MonoBehaviour
                 }
                 else
                 {
-                    testbool = true;
                     Vector2 point = col.getcalpos();
                     float correctedy = cpoint.y + ((point.x - cpoint.x) * vel.y/vel.x );
                     if(vel.y > 0)
@@ -289,10 +317,6 @@ public class MyPhysics : MonoBehaviour
             
             
         }
-        if(vel.y != 0 && yvalues.Count != 0)
-        {
-            Debug.Log(testbool);
-        }
         while(yvalues.Count > 0)
         {
             if(vel.y > 0)
@@ -307,7 +331,6 @@ public class MyPhysics : MonoBehaviour
             }
             else
             {
-                Debug.Log($"{testbool},{yvalues.Max()}");
                 if( yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) <= 0 &&  yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2) >= vel.y)
                 {
                     vel.y = yvalues.Max() - (selfcollider.Pos.y - selfcollider.size.y/2);
@@ -339,6 +362,15 @@ public class MyPhysics : MonoBehaviour
                 xvalues.Remove(xvalues.Max());
             }
         }
+        if(vel.x != 0)
+        {
+            vel.x = (float)MyMathstuff.RoundToSF(vel.x,6);
+        }
+        if(vel.y != 0)
+        {
+           vel.y = (float)MyMathstuff.RoundToSF(vel.y,6); 
+        }
+        
         return vel;
     }
     /// <summary>
@@ -354,6 +386,31 @@ public class MyPhysics : MonoBehaviour
         else
         {
             vel.x = 0;
+        }
+    }
+    void xResistace()
+    {
+        if(isGrounded && vel.x > maxGSpeed)
+        {
+            if(Math.Abs(vel.x) - maxGSpeed> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
+            {
+                vel.x -= vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime;            
+            }
+            else
+            {
+                vel.x = maxGSpeed;
+            }
+        }
+        else
+        {
+            if(Math.Abs(vel.x) - maxASpeed> Math.Abs(vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime))
+            {
+                vel.x -= vel.x/Math.Abs(vel.x) * velDecayX*Time.deltaTime;            
+            }
+            else
+            {
+                vel.x = maxGSpeed;
+            }
         }
     }
     void addvel(Vector2 vel)
@@ -381,8 +438,11 @@ public class MyPhysics : MonoBehaviour
     }
     void FixedUpdate()
     {
-        grav();
-        if (DoXdecay)
+        if (DoGrav)
+        {
+           grav(); 
+        }
+        if (DoXdecay == 0)
         {
             decaySpeedX();
         }
