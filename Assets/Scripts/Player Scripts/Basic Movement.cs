@@ -24,7 +24,11 @@ public class BasicMovement : MonoBehaviour
     bool iswallgrab = false;
 
     bool xinputs = false;
-    Vector2 moveDir = new Vector2();
+    Vector2 moveDir;
+    public Vector2 MoveDir
+    {
+        get => moveDir;
+    }
     MyPhysics P;
 
 
@@ -177,6 +181,7 @@ public class BasicMovement : MonoBehaviour
             }
             iswallgrab = false;
         }
+        moveDir = new Vector2();
         if (movement)
         {
             if (xinputs)
@@ -214,11 +219,7 @@ public class BasicMovement : MonoBehaviour
             {
                 Jump();
             }
-            if(moveDir == new Vector2())
-            {
-                moveDir.x = LastDir.x;
-            }
-            else
+            if(moveDir != new Vector2())
             {
                 LastDir = moveDir;
             }
@@ -235,7 +236,7 @@ public class BasicMovement : MonoBehaviour
             {
                 P.DoXdecay += 1;
             }
-            moveDir = new Vector2();
+            
         }
         
     }

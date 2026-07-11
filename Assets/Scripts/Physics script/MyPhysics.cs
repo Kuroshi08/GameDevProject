@@ -141,13 +141,11 @@ public class MyPhysics : MonoBehaviour
                 {
                     if(vel.y > 0)
                     {
-                        yvalues.Add(col.Pos.y + col.size.y/2);
                         yvalues.Add(col.Pos.y - col.size.y/2);                     
                     }
                     if(vel.y < 0)
                     {   
                         yvalues.Add(col.Pos.y + col.size.y/2);
-                        yvalues.Add(col.Pos.y - col.size.y/2);
                     }
                     
                     
