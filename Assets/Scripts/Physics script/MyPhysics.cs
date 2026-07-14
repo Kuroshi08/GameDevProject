@@ -34,6 +34,7 @@ public class MyPhysics : MonoBehaviour
     void Awake()
     {
         selfcollider = gameObject.GetComponent<MyCollider>();
+
         vCollider = gameObject.AddComponent<MyCollider>();
         vCollider.AddTags("MoveCol");
         vCollider.switchState(false);
