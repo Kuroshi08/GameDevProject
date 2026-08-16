@@ -43,30 +43,55 @@ public class CircleCollider : MonoBehaviour , IColliders
             return true;
         }
     } 
-    public List<MyCollider> getallcollisions(List<string> exc, bool Only)
+public List<MyCollider> getallcollisions(List<string> exc, bool Only)
     {
-        List<MyCollider> a = new List<MyCollider>();
-        foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
+        List<UnityEngine.Object> a = new List<UnityEngine.Object>();
+        List<MyCollider> b = new List<MyCollider>();
+        bool exists = false;
+        MyColliderGroup g = MyColliderGroups.HasGroup(exc,Only);
+        if(g != null)
         {
-            bool exclud = !Only;
-            MyCollider obcol = ob.GetComponent<MyCollider>();
-            foreach(string s in exc)
+            a = g.colliders;
+            exists = true;
+        }
+        if (!exists)
+        {
+            foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
             {
-                if (obcol.tags.Contains(s))
+                bool exclud = Only;
+                MyCollider obcol = ob.GetComponent<MyCollider>();
+                foreach(string s in exc)
                 {
-                    exclud = Only;
+                    if (obcol.tags.Contains(s))
+                    {
+                        exclud = !Only;
+                    }
                 }
+                if (exclud)
+                {
+                    continue;
+                }
+                a.Add(obcol);
             }
-            if (exclud)
+            MyColliderGroups.groups.Add(new MyColliderGroup(exc,Only,a));
+        }
+
+        foreach(UnityEngine.Object ob in a)
+        {
+            if(ob == null)
             {
+                a.Remove(ob);
+                g.colliders = a;
+                MyColliderGroups.UpdateGroup(g.tags,g.Only,g.colliders);
                 continue;
             }
+            MyCollider obcol = ob.GetComponent<MyCollider>();
             bool boolcheck = this.ColliderIntersect(obcol);
             if (boolcheck && obcol.gameObject != gameObject && obcol.getState())
             {
-                a.Add(obcol);
+                b.Add(obcol);
             }
         }
-        return a;
+        return b;
     }
 }

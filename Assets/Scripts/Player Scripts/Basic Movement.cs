@@ -20,6 +20,7 @@ public class BasicMovement : MonoBehaviour
     public int LastX = 1;
     bool dashb = false;
     bool oguriCap = true;
+    bool jumpbufferb = false;
     bool movement = true;
     int stopx = 0;
     bool iswallgrab = false;
@@ -118,6 +119,13 @@ public class BasicMovement : MonoBehaviour
                 jumpbool = Maxjump - 1;
             }
         }
+        
+    }
+    IEnumerator Jumpbuffer()
+    {
+        jumpbufferb = true;
+        yield return new WaitForSeconds(0.05f);
+        jumpbufferb = false;
         
     }
     IEnumerator WallJumpStop(int v)
@@ -237,8 +245,9 @@ public class BasicMovement : MonoBehaviour
             {
                 moveDir.y =  -1;
             }
-            if (Input.GetKeyDown("j"))
+            if (Input.GetKeyDown("j") || (jumpbufferb && P.isGrounded))
             {
+                StartCoroutine(Jumpbuffer());
                 Jump();
             }
             if(moveDir != new Vector2())

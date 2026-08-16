@@ -50,7 +50,7 @@ public class MyCollider : MonoBehaviour, IColliders
     bool manualPoints = false;
     
     List<float> activeLayers = new List<float>();
-    void Awake()
+    void Start()
     {
         this.Pos = new Vector2(transform.position.x,transform.position.y);
         this.Size = this.transform.lossyScale;
@@ -227,7 +227,7 @@ public class MyCollider : MonoBehaviour, IColliders
         MyColliderGroup g = MyColliderGroups.HasGroup(exc,Only);
         if(g != null)
         {
-            a = g.colliders;
+            a = new List<UnityEngine.Object>(g.colliders);
             exists = true;
         }
         if (!exists)
@@ -254,6 +254,12 @@ public class MyCollider : MonoBehaviour, IColliders
 
         foreach(UnityEngine.Object ob in a)
         {
+            if(ob == null)
+            {
+                g.colliders.Remove(ob);
+                MyColliderGroups.UpdateGroup(g.tags,g.Only,g.colliders);
+                continue;
+            }
             MyCollider obcol = ob.GetComponent<MyCollider>();
             bool boolcheck = this.ColliderIntersect(obcol);
             if (boolcheck && obcol.gameObject != gameObject && obcol.getState())
@@ -279,18 +285,32 @@ public class MyCollider : MonoBehaviour, IColliders
 
 public static class MyColliderGroups
 {
+    public static float time;
     public static List<MyColliderGroup> groups = new List<MyColliderGroup>();
     public static MyColliderGroup HasGroup(List<string> tags,bool Only)
     {
+        if(Time.time - time > 10)
+        {
+            time = Time.time;
+            resetGroups();
+        }
         foreach(MyColliderGroup g in groups)
         {
-            Debug.Log(comparetaglist(tags,g.tags));
             if(comparetaglist(tags,g.tags) && g.Only == Only)
             {
                 return g;
             }
         }
         return null;
+    }
+    public static void UpdateGroup(List<string> tags,bool Only,List<UnityEngine.Object> colliders)
+    {
+        MyColliderGroup a = HasGroup(tags,Only);
+        if(a != null)
+        {
+            groups.Remove(a);
+        }
+        groups.Add(new MyColliderGroup(tags,Only,colliders));
     }
     public static void resetGroups()
     {

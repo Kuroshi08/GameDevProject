@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class PlayerCombat : MonoBehaviour, IHealth
@@ -16,6 +17,9 @@ public class PlayerCombat : MonoBehaviour, IHealth
     public TextAsset SpellJson;
 
     public GameObject RhythmIndicator;
+    public GameObject hpmask;
+    float hpsize;
+    float hppos;
     public GameObject projectilePrefab;
     RhythmSystem rs;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -23,6 +27,8 @@ public class PlayerCombat : MonoBehaviour, IHealth
     {
         BM = GetComponent<BasicMovement>();
         rs = RhythmIndicator.GetComponent<RhythmSystem>();
+        hpsize = hpmask.transform.localScale.y;
+        hppos = hpmask.transform.position.y;
     }
 
     // Update is called once per frame
@@ -53,6 +59,23 @@ public class PlayerCombat : MonoBehaviour, IHealth
         {
             die();
         }
+        updateHPbar();
+    }
+    //updates hpbar
+    void updateHPbar()
+    {
+        if(health <= 0)
+        {
+            hpmask.transform.localScale = new Vector3();
+            return;
+        }
+        hpmask.transform.localScale = new Vector3(hpmask.transform.localScale.x,hpsize * (health / 100),1); 
+        hpmask.transform.position = new Vector3(hpmask.transform.position.x,hppos - (hpsize * (health / 100)/2),1); 
+        foreach(Transform child in hpmask.transform)
+        {
+            child.transform.localScale = new Vector3(child.transform.localScale.x,1/(hpsize * (health / 100)),1); 
+            child.transform.position = new Vector3(child.transform.position.x,hppos + (hpsize * (health / 100)/2),1); 
+        }
     }
     public bool Damage(float d, float iframe)
     {
@@ -63,6 +86,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
         StartCoroutine(startiframe(iframe));
         return true;
     }
+    //Immune frames
     IEnumerator startiframe(float d)
     {
         IFrames = true;
@@ -72,6 +96,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
         }
         IFrames = false;
     }
+    //combat keybinds
     string GetSpecificKey()
     {
         if (Input.GetKeyDown(KeyCode.J))
@@ -88,6 +113,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
         }
         return null;
     }
+    //check rhythm
     float CanAttack(float attackwindowp)
     {
         float c;
@@ -110,7 +136,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
     }
 
 
-
+    //checks if spell can be casted
     void CastSpell()
     {
         if(!(attackstring.Count >= 3))
@@ -130,6 +156,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
         }
         
     }
+    //Checks
     Spell DetectSpell()
     {
         Spells slist = JsonUtility.FromJson<Spells>(SpellJson.text);
@@ -181,7 +208,7 @@ public class PlayerCombat : MonoBehaviour, IHealth
         }
         return true;
     }
-
+    //Creates spell projectile
     void CreateSpell(Spell s)
     {
         GameObject SpellProj = Instantiate(projectilePrefab);
@@ -192,16 +219,17 @@ public class PlayerCombat : MonoBehaviour, IHealth
             p.spellname = s.name;
             if(data.attackSelf != true)
             {
-                Debug.Log("aaa" + data.attackSelf);
                 p.parent = this.gameObject;
             }
             p.Pos = this.transform.position + ((Vector3)data.Pos * BM.LastX);
             p.direction = ((Vector2)data.Pos * BM.LastX).normalized;
+            p.transform.localScale = (Vector3)data.Scale;
             p.data = data;
         }
     }
     void die()
     {
+        Debug.Log("Dead");
         Application.Quit();
     }
 

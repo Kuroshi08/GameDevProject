@@ -30,7 +30,7 @@ public class BasicProjectile : MonoBehaviour
     {
         transform.Translate(data.Vel * Time.deltaTime);
 
-        List<MyCollider> colret = col.getallcollisions(new List<string>() {""}, false);
+        List<MyCollider> colret = col.getallcollisions(new List<string>() {"Hurtbox","Physics"}, true);
         if(colret.Count != 0)
         {
             bool hitother = false;
@@ -65,15 +65,15 @@ public class BasicProjectile : MonoBehaviour
     {
         starttime = Time.time;
         this.transform.position = Pos;
-        this.transform.localScale = data.Scale;
         this.transform.rotation = Quaternion.Euler(0,0,Vector2.Angle(direction, Vector2.right));
+
 
         Texture2D image = Resources.Load(data.ImagePath) as Texture2D;
         Rect rec = new Rect(0, 0, image.width, image.height);
         Sprite sprite = Sprite.Create(image,rec,new Vector2(0.5f,0.5f),image.width);
         if(direction.x < 0)
         {
-            SR.flipY = true;
+            this.transform.Rotate(180,0,0);
         }
         SR.sprite = sprite;
         if(data.coltype == "circle")

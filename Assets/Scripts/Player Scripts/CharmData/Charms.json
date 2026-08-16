@@ -1,0 +1,15 @@
+{
+    "Charms": [
+        {
+            "name" : "Jump +1",
+            "imagepath": "Charms/jumpboost",
+            "effect": [
+                {
+                    "att" : "jump count",
+                    "value": 1,
+                    "mod" : "add"
+                }
+            ]
+        }
+    ]
+}

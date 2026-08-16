@@ -1,7 +1,7 @@
 using System.Collections;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 public class WalkingEnemy : MonoBehaviour, IHealth
 {
@@ -9,14 +9,18 @@ public class WalkingEnemy : MonoBehaviour, IHealth
     public float maxwalkvelX = 1;
     public float health = 100;
     public float speed= 0.2f;
+    public float damage = 10;
+    public float immuneFrame = 0.1f;
     MyPhysics P;
     Vector2 dir = new Vector2(1,0);
+    MyCollider col;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        col = GetComponent<MyCollider>();
         if(gameObject.GetComponent<MyPhysics>() != null)
         {
-            P=gameObject.GetComponent<MyPhysics>();
+            P = gameObject.GetComponent<MyPhysics>();
         }
         else
         {
@@ -36,7 +40,26 @@ public class WalkingEnemy : MonoBehaviour, IHealth
             dir.x = -P.xwallc;
         }
         Move();
-        
+        checkHitPlayer();
+    }
+    void checkHitPlayer()
+    {
+        List<MyCollider> colret = col.getallcollisions(new List<string>() {"Hurtbox"}, true);
+        if(colret.Count != 0)
+        {
+            Debug.Log("aaaa");
+            foreach (MyCollider c in colret)
+            {
+                IHealth hpscript = c.gameObject.GetComponent<IHealth>();
+                if(hpscript != null && c.gameObject.name == "Player")
+                {
+                    hpscript.Damage(damage,immuneFrame);
+                }
+                
+            }
+            
+            
+        }
     }
     void Move()
     {
