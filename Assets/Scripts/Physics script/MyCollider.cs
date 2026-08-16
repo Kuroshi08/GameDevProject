@@ -4,11 +4,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-public class MyCollider : MonoBehaviour
+public class MyCollider : MonoBehaviour, IColliders
 {
-    Mathstuff MyMathStuff = new Mathstuff();
+    [SerializeField]
     List<string> Tags = new List<string>();
-    List<string> tags
+    public List<string> tags
     {
         get => Tags;
         set
@@ -125,7 +125,7 @@ public class MyCollider : MonoBehaviour
         foreach(Vector2[] wall1 in this.GetWalls())
         {
             foreach(Vector2[] wall2 in a.GetWalls())
-                if (MyMathStuff.doIntersect(wall1, wall2))
+                if (Mathstuff.doIntersect(wall1, wall2))
                 {
                     return true;
                 }
@@ -140,7 +140,7 @@ public class MyCollider : MonoBehaviour
         List<Vector2[]> sad = new List<Vector2[]>();
         foreach(Vector2[] walls in this.GetWalls())
         {
-            if (MyMathStuff.GetIntersection(walls, line) != null)
+            if (Mathstuff.GetIntersection(walls, line) != null)
             {
                 sad.Add(walls);
             }
@@ -218,20 +218,50 @@ public class MyCollider : MonoBehaviour
     }
 
 
-    public List<MyCollider> getallcollisions()
+    public List<MyCollider> getallcollisions(List<string> exc, bool Only)
     {
         Aligntoparent();
-        List<MyCollider> a = new List<MyCollider>();
-        foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
+        List<UnityEngine.Object> a = new List<UnityEngine.Object>();
+        List<MyCollider> b = new List<MyCollider>();
+        bool exists = false;
+        MyColliderGroup g = MyColliderGroups.HasGroup(exc,Only);
+        if(g != null)
+        {
+            a = g.colliders;
+            exists = true;
+        }
+        if (!exists)
+        {
+            foreach(UnityEngine.Object ob in FindObjectsByType(typeof(MyCollider),FindObjectsSortMode.None))
+            {
+                bool exclud = Only;
+                MyCollider obcol = ob.GetComponent<MyCollider>();
+                foreach(string s in exc)
+                {
+                    if (obcol.tags.Contains(s))
+                    {
+                        exclud = !Only;
+                    }
+                }
+                if (exclud)
+                {
+                    continue;
+                }
+                a.Add(obcol);
+            }
+            MyColliderGroups.groups.Add(new MyColliderGroup(exc,Only,a));
+        }
+
+        foreach(UnityEngine.Object ob in a)
         {
             MyCollider obcol = ob.GetComponent<MyCollider>();
             bool boolcheck = this.ColliderIntersect(obcol);
             if (boolcheck && obcol.gameObject != gameObject && obcol.getState())
             {
-                a.Add(obcol);
+                b.Add(obcol);
             }
         }
-        return a;
+        return b;
     }
     void Update()
     {
@@ -244,5 +274,53 @@ public class MyCollider : MonoBehaviour
     {
 
         Aligntoparent();
+    }
+}
+
+public static class MyColliderGroups
+{
+    public static List<MyColliderGroup> groups = new List<MyColliderGroup>();
+    public static MyColliderGroup HasGroup(List<string> tags,bool Only)
+    {
+        foreach(MyColliderGroup g in groups)
+        {
+            Debug.Log(comparetaglist(tags,g.tags));
+            if(comparetaglist(tags,g.tags) && g.Only == Only)
+            {
+                return g;
+            }
+        }
+        return null;
+    }
+    public static void resetGroups()
+    {
+        groups = new List<MyColliderGroup>();
+    }
+    static bool comparetaglist(List<string> t1, List<string> t2)
+    {
+        if(t1.Count != t2.Count)
+        {
+            return false;
+        }
+        for(int i = 0; i < t1.Count; i++)
+        {
+            if (t2[i] != t1[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+}
+public class MyColliderGroup
+{
+    public List<string> tags;
+    public bool Only;
+    public List<UnityEngine.Object> colliders;
+    public MyColliderGroup(List<string> tags,bool Only,List<UnityEngine.Object> colliders)
+    {
+        this.tags = tags;
+        this.Only = Only;
+        this.colliders = colliders;
     }
 }

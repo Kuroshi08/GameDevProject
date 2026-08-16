@@ -13,7 +13,6 @@ public class MyPhysics : MonoBehaviour
 {
     public Vector2 vel;
     public float velDecayX = 100;
-    Mathstuff MyMathstuff = new Mathstuff();
     float mass;
     float maxGSpeed = 15;
     float maxASpeed = 25;
@@ -91,7 +90,7 @@ public class MyPhysics : MonoBehaviour
                 points[3] = cPos - (cSize/2) + new Vector2(vel.x,0);
             }
             vCollider.ChangePoints(points);
-            List<MyCollider> vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> vcolliderr = vCollider.getallcollisions(new List<string>() {"Physics"}, true);
             if(vcolliderr.Count != 0)
             {
                 
@@ -134,7 +133,7 @@ public class MyPhysics : MonoBehaviour
                 points[3] = cPos - (cSize/2) + new Vector2(0,vel.y);
             }
             vCollider.ChangePoints(points);
-            List<MyCollider> vcolliderr = vCollider.getallcollisions();
+            List<MyCollider> vcolliderr = vCollider.getallcollisions(new List<string>() {"Physics"}, true);
             if(vcolliderr.Count != 0)
             {
 
@@ -198,8 +197,8 @@ public class MyPhysics : MonoBehaviour
             vCollider.ChangePoints(rpoints);
 
 
-            List<MyCollider> vcolliderr = vCollider.getallcollisions();
-            List<MyCollider> ecolliderr = eCollider.getallcollisions(); 
+            List<MyCollider> vcolliderr = vCollider.getallcollisions(new List<string>() {"Physics"}, true);
+            List<MyCollider> ecolliderr = eCollider.getallcollisions(new List<string>() {"Physics"}, true); 
             foreach(MyCollider col in ecolliderr)
             {
                 if(!vcolliderr.Contains(col))
@@ -222,7 +221,7 @@ public class MyPhysics : MonoBehaviour
                     float rwallsd = 0;
                     foreach(Vector2[] wall in walls)
                     {
-                        Vector2? wp = MyMathstuff.GetIntersection(wall,cline) - cpoint;
+                        Vector2? wp = Mathstuff.GetIntersection(wall,cline) - cpoint;
                         if(wp == null)
                         {
                             break;
@@ -363,11 +362,11 @@ public class MyPhysics : MonoBehaviour
         }
         if(vel.x != 0)
         {
-            vel.x = (float)MyMathstuff.RoundToSF(vel.x,6);
+            vel.x = (float)Mathstuff.RoundToSF(vel.x,6);
         }
         if(vel.y != 0)
         {
-           vel.y = (float)MyMathstuff.RoundToSF(vel.y,6); 
+           vel.y = (float)Mathstuff.RoundToSF(vel.y,6); 
         }
         
         return vel;

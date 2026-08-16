@@ -9,7 +9,6 @@ public class RhythmSystem : MonoBehaviour
     public float BPM = 120;
     public double StartTime;
     public float Lpercent = 10;
-    float currentBeat;
     float ExactBeat;
     public GameObject Heart;
 
@@ -18,7 +17,7 @@ public class RhythmSystem : MonoBehaviour
     {
         StartRhythm();
     }
-    void StartRhythm()
+    public void StartRhythm()
     {
         StartTime = Time.timeAsDouble;
     }
@@ -49,7 +48,7 @@ public class RhythmSystem : MonoBehaviour
             yield return new WaitForSeconds(0.01f);
         }
     }
-    bool ifnewbeat()
+    public bool ifnewbeat()
     {
         double SPB = 1/(BPM/60);
         double timeSinceStart = Time.timeAsDouble - StartTime;
@@ -61,7 +60,7 @@ public class RhythmSystem : MonoBehaviour
         }
         return false;
     }
-    float GetCurrentBeatP()
+    public float GetCurrentBeatP()
     {
         double SPB = 1/(BPM/60);
         double timeSinceStart = Time.timeAsDouble - StartTime;

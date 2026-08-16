@@ -1,0 +1,84 @@
+{
+    "spells":[
+        {
+            "name" : "Fireball",
+            "inputs":[
+                {"PosI" : ["l"] },
+                {"PosI" : ["k,1"] },
+                {"PosI" : ["j,1"] } 
+            ],
+            "code" : "BS",
+
+
+            
+            
+            "p": {
+                "damage" : 5,
+                "AttackType" : "ranged",
+                "lifespan" : 10,
+                "ImagePath" : "Projectiles/ball",
+                "coltype" : "square",
+                "colsize" : {"x" : 0.8, "y" : 0.8},
+                "SpellAttribute" : "fire",
+                "immuneFrame" : 0.1,
+                "Scale" : {"x" : 1, "y" : 1},
+                "Pos" : {"x" : 1, "y" : 0},
+                "Vel" : {"x" : 1, "y" : 0}
+            }
+        },
+        {
+            "name" : "Slash",
+            "inputs":[
+                {"PosI" : ["j"] },
+                {"PosI" : ["k,1"] },
+                {"PosI" : ["j,1"] } 
+            ],
+            "code" : "BA",
+
+
+            
+            
+            "p": {
+                "damage" : 15,
+                "attackType" : "melee",
+                "lifespan" : 0.2,
+                "ImagePath" : "Projectiles/slash",
+                "coltype" : "square",
+                "colsize" : {"x" : 1, "y" : 1},
+                "SpellAttribute" : "normal",
+                "immuneFrame" : 0.2,
+                "Scale" : {"x" : 1, "y" : 1},
+                "Pos" : {"x" : 1, "y" : 0},
+                "Vel" : {"x" : 0, "y" : 0}
+            }
+        },        {
+            "name" : "Rin KMS",
+            "inputs":[
+                {"PosI" : ["l"] },
+                {"PosI" : ["l,1"] },
+                {"PosI" : ["l,1"] }
+            ],
+            "code" : "KMS",
+
+
+            
+            
+            "p": {
+                "damage" : 1000,
+                "attackType" : "melee",
+                "lifespan" : 0.2,
+                "ImagePath" : "Projectiles/kaboom",
+                "coltype" : "square",
+                "colsize" : {"x" : 15, "y" : 15},
+                "SpellAttribute" : "normal",
+                "immuneFrame" : 0.2,
+                "Scale" : {"x" : 15, "y" : 15},
+                "Pos" : {"x" : 0, "y" : 0},
+                "Vel" : {"x" : 0, "y" : 0},
+                "attackSelf" : true
+            }
+        }
+
+    ]
+    
+}

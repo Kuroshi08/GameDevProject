@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine.Rendering;
 
-public class Mathstuff
+public static class Mathstuff
 {
-    bool onSegment(Vector2 p, Vector2 q, Vector2 r) {
+    static bool  onSegment(Vector2 p, Vector2 q, Vector2 r) {
         return (q[0] <= Math.Max(p[0], r[0]) && 
                 q[0] >= Math.Min(p[0], r[0]) &&
                 q[1] <= Math.Max(p[1], r[1]) && 
                 q[1] >= Math.Min(p[1], r[1]));
     }
-    int orientation(Vector2 p, Vector2 q, Vector2 r)
+    static int orientation(Vector2 p, Vector2 q, Vector2 r)
     {
         float val = (q[1] - p[1]) * (r[0] - q[0]) -
                   (q[0] - p[0]) * (r[1] - q[1]);
@@ -26,7 +26,7 @@ public class Mathstuff
         // 1 for clockwise, 2 for counterclockwise
         return (val > 0) ? 1 : 2;
     }
-    public bool doIntersect(Vector2[] line1, Vector2[] line2) {
+    public static bool doIntersect(Vector2[] line1, Vector2[] line2) {
         Vector2[][] points = new Vector2[][] {line1,line2};
         // find the four orientations needed
         // for general and special cases
@@ -58,7 +58,7 @@ public class Mathstuff
 
         return false;
     }
-    public Vector2? GetIntersection(Vector2[] line1, Vector2[] line2)
+    public static Vector2? GetIntersection(Vector2[] line1, Vector2[] line2)
     {
         Vector2 ret = new Vector2();
         Vector2 v1 = line1[0] - line1[1];
@@ -106,7 +106,7 @@ public class Mathstuff
         
 
     }
-    public double RoundToSF(float val, int sf)
+    public static double RoundToSF(float val, int sf)
     {
         double scale = Math.Log10(Math.Abs(val));
         double num = val / (Math.Pow(10,scale));

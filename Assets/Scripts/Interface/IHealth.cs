@@ -2,7 +2,7 @@ using UnityEngine;
 
 public interface IHealth
 {
-    public bool Damage(float a);
+    public bool Damage(float a, float iduration);
 
 
 }

@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using System.Collections;
 using Unity.VisualScripting;
-using System.Linq;
 
 public class BasicMovement : MonoBehaviour
 {
@@ -15,8 +14,10 @@ public class BasicMovement : MonoBehaviour
     public float walljumpv = 3;
     public float dashV = 20;
     public Vector2 velmod;
-    public bool jumpbool = true;
+    public int Maxjump = 2;
+    public int jumpbool = 1;
     Vector2 LastDir = new Vector2(1,0);
+    public int LastX = 1;
     bool dashb = false;
     bool oguriCap = true;
     bool movement = true;
@@ -30,6 +31,7 @@ public class BasicMovement : MonoBehaviour
         get => moveDir;
     }
     MyPhysics P;
+    PlayerCombat PC;
 
 
     //movement keys
@@ -45,7 +47,7 @@ public class BasicMovement : MonoBehaviour
         {
             P = gameObject.AddComponent<MyPhysics>();
         }
-        
+        PC = GetComponent<PlayerCombat>();
     }
     void Start()
     {
@@ -82,7 +84,7 @@ public class BasicMovement : MonoBehaviour
 
     void Jump()
     {
-        if (jumpbool)
+        if (jumpbool > 0)
         {
             if(P.xwallc != 0 && !P.isGrounded)
             {
@@ -91,19 +93,30 @@ public class BasicMovement : MonoBehaviour
             }
             P.vel.y = 0;
             P.vel.y += jumpv;
-            jumpbool = false;
+            jumpbool -= 1;
         }
         
     }
-
-
+    void OnCombatMode()
+    {
+        movement = false;
+        PC.AttackState = true;
+    }
+    void OffCombatMode()
+    {
+        movement = true;
+        PC.AttackState = false;
+    }
 
     IEnumerator StartGTime()
     {
         yield return new WaitForSeconds(0.05f);
         if (!(P.isGrounded || P.xwallc != 0))
         {
-            jumpbool = false;
+            if(jumpbool == Maxjump)
+            {
+                jumpbool = Maxjump - 1;
+            }
         }
         
     }
@@ -159,7 +172,7 @@ public class BasicMovement : MonoBehaviour
         }
         if (P.isGrounded || P.xwallc != 0)
         {
-            jumpbool = true;
+            jumpbool = Maxjump;
         }
         else
         {
@@ -180,6 +193,15 @@ public class BasicMovement : MonoBehaviour
                 P.gravityMod += 0.5f;
             }
             iswallgrab = false;
+        }
+        if (Input.GetKey(KeyCode.Space) && P.isGrounded)
+        {
+            OnCombatMode();
+            P.vel.x = 0;
+        }
+        if (!Input.GetKey(KeyCode.Space))
+        {
+            OffCombatMode();
         }
         moveDir = new Vector2();
         if (movement)
@@ -215,13 +237,14 @@ public class BasicMovement : MonoBehaviour
             {
                 moveDir.y =  -1;
             }
-            if (Input.GetKey("j"))
+            if (Input.GetKeyDown("j"))
             {
                 Jump();
             }
             if(moveDir != new Vector2())
             {
                 LastDir = moveDir;
+                LastX = (int)moveDir.x;
             }
             
             if (Input.GetKey("k"))
@@ -236,7 +259,6 @@ public class BasicMovement : MonoBehaviour
             {
                 P.DoXdecay += 1;
             }
-            
         }
         
     }
